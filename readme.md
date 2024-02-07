@@ -5,10 +5,11 @@ Conscious Brand Sage is an advanced Express.js application integrated with OpenA
 ## Key Features
 
 **AI-Powered Brand Story Generation:** Leverages OpenAI's GPT-4 to generate unique and tailored brand stories.
+
 **Regenerative Business Oriented:** Specifically designed for businesses committed to sustainability and ethical values.
+
 **Customizable Assistant:** Ability to create or use an existing assistant for tailored interactions.
-**File Upload Functionality:** Supports uploading files to be used by the OpenAI assistant.
-Target Audience Identification: Generates realistic target audiences based on business details.
+
 **RESTful API Endpoints:** Provides various endpoints for brand story generation and file handling.
 
 ## Installation
