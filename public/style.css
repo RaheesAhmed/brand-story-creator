@@ -1,0 +1,212 @@
+body {
+  background-color: #f4f4f4;
+  font-family: "Arial", sans-serif;
+}
+
+h2 {
+  color: #333;
+  text-align: center;
+}
+
+.form-group label {
+  color: #555;
+}
+
+.form-control {
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+#brandStory {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+.form-control:focus {
+  border-color: #6c757d;
+  box-shadow: none;
+}
+
+.form-control {
+  border: none !important;
+  border-bottom: 1px solid #ced4da !important;
+}
+
+.custom-form-label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.btn-custom {
+  background-color: #8e44ad; /* Custom color for the button */
+  border: none;
+}
+.btn-custom:hover {
+  background-color: #732d91; /* Darker shade for hover state */
+}
+.form-section-title {
+  font-size: 1.5rem;
+  color: #4a4a4a;
+  margin-bottom: 2rem;
+}
+.form-row {
+  margin-bottom: 1rem;
+}
+header.container-fluid {
+  padding: 0px 160px;
+  background: #f8f9fa;
+}
+section.mt-5 {
+  padding: 0px 160px;
+}
+section.mt-4 {
+  padding: 50px 160px;
+}
+@media (max-width: 768px) {
+  header.container-fluid {
+    padding: 0px 20px;
+  }
+
+  section.mt-5 {
+    padding: 0px 20px;
+  }
+  section.mt-4 {
+    padding: 0px 20px;
+  }
+
+  section.container-fluid {
+    padding: 0px 20px;
+  }
+
+  section.container {
+    padding: 0px 20px;
+  }
+}
+/* Adjust the heading styles to match the design */
+h2.mb-4 {
+  font-weight: 400; /* Example, adjust as needed */
+  color: #4a4a4a; /* Example, adjust as needed */
+}
+
+/* Style the form background and shadow */
+form {
+  background-color: #fff;
+  padding: 60px;
+  max-width: 650px;
+  margin: auto;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjust form input styles */
+.form-control {
+  border-radius: 0; /* Example, if design has no rounded corners */
+  border: 1px solid #ccc; /* Example, adjust as needed */
+}
+
+/* Style the button according to the design */
+.btn-custom {
+  background-color: #b3226a; /* Use the exact color from the design */
+  color: white;
+  font-weight: 600;
+}
+
+.btn-custom:hover {
+  background-color: #9e1e5a; /* Darker shade for the hover state */
+}
+
+/* Style the footer to match the design */
+footer {
+  color: #161616;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  header,
+  section {
+    padding: 20px;
+  }
+  /* Other responsive styles as needed */
+}
+/* Center the download button */
+.download-button-wrapper {
+  max-width: 650px;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px; /* Changed from flex-end to center */
+}
+label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  color: #2c3345ff;
+  /* font-family: Poppins; */
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* --------------------- */
+
+body {
+  background-color: #f8f9fa;
+  font-family: "Montserrat", sans-serif;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.form-container {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+}
+
+.btn-custom {
+  background-color: #007bff;
+  color: white;
+}
+
+.card {
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  color: #007bff;
+}
+
+.footer {
+  margin-top: 4rem;
+  color: #6c757d;
+}
+/* Additional styles */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.select-audience-btn {
+  margin-right: 10px;
+}
+
+.fa-copy {
+  cursor: pointer;
+  color: #007bff;
+}
+
+.fa-copy:hover {
+  color: #0056b3;
+}

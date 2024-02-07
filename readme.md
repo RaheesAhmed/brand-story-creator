@@ -1,13 +1,15 @@
 # Conscious Brand Sage
 
-Conscious Brand Sage is a comprehensive Express.js application with OpenAI integration for generating brand stories and assisting with branding for regenerative, conscious businesses. This application includes file upload functionality, AI-powered brand storytelling, and more.
+Conscious Brand Sage is an advanced Express.js application integrated with OpenAI's GPT-4, designed to aid in the creation and development of brand stories, especially for businesses with a focus on sustainability and ethical practices. It offers AI-driven insights for crafting compelling narratives that resonate with a business's target audience.
 
-## Features
+## Key Features
 
-- **Brand Story Generation:** Generate compelling brand stories using AI, tailored to your business's unique characteristics.
-- **OpenAI Integration:** Utilize OpenAI's GPT-4 model for natural language processing and content generation.
-- **Regenerative Business Focus:** Receive advice and support aligned with sustainability and ethical principles.
-- **Friendly and Conversational:** Get personalized, context-specific guidance in a friendly and approachable manner.
+**AI-Powered Brand Story Generation:** Leverages OpenAI's GPT-4 to generate unique and tailored brand stories.
+**Regenerative Business Oriented:** Specifically designed for businesses committed to sustainability and ethical values.
+**Customizable Assistant:** Ability to create or use an existing assistant for tailored interactions.
+**File Upload Functionality:** Supports uploading files to be used by the OpenAI assistant.
+Target Audience Identification: Generates realistic target audiences based on business details.
+**RESTful API Endpoints:** Provides various endpoints for brand story generation and file handling.
 
 ## Installation
 
@@ -24,21 +26,21 @@ Conscious Brand Sage is a comprehensive Express.js application with OpenAI integ
 
 ## API Endpoints
 
-- `/generate-story`: POST endpoint to generate brand stories.
+`POST /generate-story:` Generate a brand story based on business details.
+`GET /target-audiences:` Retrieve potential target audiences for a business.
 
-## Configuration
+## Technology Stack
 
-- The OpenAI API key should be set in the `.env` file.
-- Additional configurations can be made in the `assistant.json` file.
+`Backend:` Node.js with Express.js framework.
+`AI Processing:` OpenAI GPT-4 model.
+`Environment Variables:` dotenv for managing API keys and other configurations.
 
-## Dependencies
+## File Structure
 
-- Express.js
-- CORS
-- Body Parser
-- fs (File System)
-- OpenAI
-- dotenv
+`app.js:` Main server file with route definitions and middleware configurations.
+`assistant.json:` Stores details of the created OpenAI assistant.
+`/public:` Contains static files for the frontend.
+`/uploads:` Destination for file uploads.
 
 ## Credits
 

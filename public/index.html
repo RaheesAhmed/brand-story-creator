@@ -39,6 +39,7 @@
             class="form-control"
             id="businessName"
             name="businessName"
+            placeholder="Do you have a name or a working title for your business?"
             required
           />
         </div>
@@ -51,6 +52,7 @@
             id="natureOfBusiness"
             name="natureOfBusiness"
             rows="3"
+            placeholder="What are the products or services you plan to offer?"
             required
           ></textarea>
         </div>
@@ -65,6 +67,7 @@
             id="uniqueSellingProposition"
             name="uniqueSellingProposition"
             rows="3"
+            placeholder="What unique aspects make your business stand out?"
             required
           ></textarea>
         </div>
@@ -77,6 +80,7 @@
             id="positiveImpact"
             name="positiveImpact"
             rows="3"
+            placeholder="Clarify the positive impact or change you wish to create through your business."
             required
           ></textarea>
         </div>
@@ -84,13 +88,13 @@
         <!-- Target Audience -->
         <div class="form-group">
           <label for="targetAudience">Target Audience:</label>
-          <input
-            type="text"
+          <textarea
             class="form-control"
             id="targetAudience"
             name="targetAudience"
+            placeholder="Who are you most wanting to engage with?"
             required
-          />
+          /></textarea>
         </div>
 
         <!-- Core Business Values -->
@@ -102,6 +106,7 @@
             name="coreValues"
             rows="3"
             required
+            placeholder="What are the fundamental values that drive your business?"
           ></textarea>
         </div>
 
@@ -115,6 +120,7 @@
             id="regenerationFocus"
             name="regenerationFocus"
             rows="3"
+            placeholder="How does your business plan to incorporate sustainability and ethical practices?"
             required
           ></textarea>
         </div>
@@ -127,6 +133,7 @@
             class="form-control"
             id="pricingStrategy"
             name="pricingStrategy"
+            placeholder="Are you considering a budget-friendly or premium approach?"
             required
           />
         </div>
@@ -143,10 +150,24 @@
         >
           Create Brand Story
         </button>
+        <div id="loadingIndicator" class="text-center my-3" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+              
+          </div>
+          <p>Processing, please wait...</p>
+      </div>
+        
       </form>
 
       <!-- Place to display the brand story -->
-      <div id="brandStory" class="mt-3"></div>
+      <div id="brandStory" class="mt-4"></div>
+
+      <!-- Add a section to display the potential target audiences in Bootstrap cards -->
+      <div id="targetAudiences" class="mt-4"></div>
+
+     
+
       <footer class="footer text-center mt-3">
         <p>&copy; 2024 Business Idea Platform. All rights reserved.</p>
       </footer>
@@ -154,8 +175,11 @@
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script>
+      
       $(document).ready(function () {
-        $("#submitBtn").click(function () {
+        // Submit the business form and get target audiences
+        $("#submitBtn").click(function (event) {
+          event.preventDefault();
           var formData = {
             businessName: $("#businessName").val(),
             natureOfBusiness: $("#natureOfBusiness").val(),
@@ -166,18 +190,88 @@
             regenerationFocus: $("#regenerationFocus").val(),
             pricingStrategy: $("#pricingStrategy").val(),
           };
+          showLoading(true);
 
-          // Display loading message
-          $("#brandStory").html("<p>Please wait, processing...</p>");
+          console.log(`Data Recieved: ${formData}`)
 
           $.ajax({
+    type: "POST",
+    url: "http://localhost:3000/submit-business-form",  // Correct endpoint
+    contentType: "application/json",
+    data: JSON.stringify(formData),
+    success: function (response) {
+      console.log("Received Target Audiences: ", response.targetAudiences);
+      displayTargetAudiences(response.targetAudiences);
+      showLoading(false);
+    },
+    error: function (error) {
+      console.error("Error in form submission: ", error);
+      $("#brandStory").html("<p>An error occurred while processing your request.</p>");
+    },
+  });
+});
+        
+
+        function displayTargetAudiences(audiences) {
+          var htmlContent = audiences.map(function (audience, index) {
+            return `
+              <div class="card mt-2">
+                <div class="card-body">
+                  <h5 class="card-title">Target Audience ${index + 1}</h5>
+                  <p class="card-text" id="shortAudience${index}">${formatText(audience.substring(0, 100))}...</p>
+                  <p class="card-text d-none" id="fullAudience${index}">${formatText(audience)}</p>
+                  <button class="btn btn-primary select-audience-btn" data-audience="${audience}">Select</button>
+                  <button class="btn btn-link" onclick="toggleAudience(${index})">Read More</button>
+                </div>
+              </div>`;
+          }).join("");
+
+          $("#targetAudiences").html(htmlContent);
+          showLoading(false);
+        }
+
+        // Define the toggleAudience function within the jQuery ready function
+        window.toggleAudience = function(index) {
+          $("#shortAudience" + index).toggleClass('d-none');
+          $("#fullAudience" + index).toggleClass('d-none');
+        }
+  
+        // Add a click event listener to the select-audience-btn
+        $(document).on('click', '.select-audience-btn', function() {
+          var selectedAudience = $(this).data('audience');
+          var businessDetails = {
+            businessName: $("#businessName").val(),
+            natureOfBusiness: $("#natureOfBusiness").val(),
+            uniqueSellingProposition: $("#uniqueSellingProposition").val(),
+            positiveImpact: $("#positiveImpact").val(),
+            coreValues: $("#coreValues").val(),
+            regenerationFocus: $("#regenerationFocus").val(),
+            pricingStrategy: $("#pricingStrategy").val(),
+          };
+          generateBrandStory(businessDetails, selectedAudience);
+        });
+
+        // Add a click event listener to the changeAudienceBtn
+        $("#changeAudienceBtn").click(function() {
+          $("#brandStory").html("");
+          showLoading(true);
+          var businessDetails = {
+            businessName: $("#businessName").val(),
+            natureOfBusiness: $("#natureOfBusiness").val(),
+            uniqueSellingProposition: $("#uniqueSellingProposition").val(),
+            positiveImpact: $("#positiveImpact").val(),
+            coreValues: $("#coreValues").val(),
+            regenerationFocus: $("#regenerationFocus").val(),
+            pricingStrategy: $("#pricingStrategy").val(),
+          };
+          $.ajax({
             type: "POST",
-            url: "http://localhost:3000/generate-story",
-            data: JSON.stringify(formData),
+            url: "http://localhost:3000/get-target-audiences",
             contentType: "application/json",
+            data: JSON.stringify(businessDetails),
             success: function (response) {
-              // Display the response
-              $("#brandStory").html("Brand Story: " + response.brandStory);
+              displayTargetAudiences(response.targetAudiences);
+              showLoading(false);
             },
             error: function (error) {
               console.error("Error:", error);
@@ -187,7 +281,46 @@
             },
           });
         });
+
+
+
+function formatText(text) {
+  return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\"(.*?)\"/g, '<b>$1</b>');
+}
+
+     
+function showLoading(show) {
+          if (show) {
+            $("#loadingIndicator").show();
+          } else {
+            $("#loadingIndicator").hide();
+          }
+        }
+
+        function generateBrandStory(businessDetails, selectedAudience) {
+        businessDetails.selectedTargetAudience = selectedAudience;
+        showLoading(true);
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:3000/generate-story",
+            contentType: "application/json",
+            data: JSON.stringify(businessDetails),
+            success: function(response) {
+                $("#brandStory").html(`<p>Brand Story: ${response.brandStory}</p>`);
+            },
+            error: function(error) {
+                console.error("Error:", error);
+                $("#brandStory").html("<p>An error occurred while generating the brand story.</p>");
+            },
+            complete: function() {
+                // Hide the loader after the AJAX request completes
+                showLoading(false);
+            }
+        });
+    }
       });
+
+
     </script>
   </body>
 </html>

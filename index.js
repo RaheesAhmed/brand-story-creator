@@ -94,7 +94,6 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 // Endpoint to generate a brand story
 app.post("/generate-story", async (req, res) => {
   try {
-    // Extracting data from the request body
     const {
       businessName,
       natureOfBusiness,
@@ -105,23 +104,23 @@ app.post("/generate-story", async (req, res) => {
       regenerationFocus,
       pricingStrategy,
     } = req.body;
-
-    console.log("Data Recieved", req.body);
-
-    // Get or create the assistant
     const assistantDetails = await getOrCreateAssistant();
 
-    // Formulate the prompt for the assistant
-    const prompt = `Generate a brand story for a business with the following details:
-      Business Name: ${businessName}
-      Nature of Business and Services: ${natureOfBusiness}
-      Unique Selling Proposition: ${uniqueSellingProposition}
-      Positive Impact: ${positiveImpact}
-      Target Audience: ${targetAudience}
-      Core Business Values: ${coreValues}
-      Focus on Regeneration and Ethics: ${regenerationFocus}
-      Pricing Strategy: ${pricingStrategy}
-      Use the 'hero, villain, passion' storytelling framework. The target audience is the hero. Identify the villain (main challenge they face) and passion (their deepest desires).`;
+    const prompt =
+      `Using the 'hero, villain, passion' storytelling framework, create a brand story for the selected target audience.\n\n` +
+      `Target Audience: ${targetAudience}\n` +
+      `Hero: The specific group of people targeted, aiming to build a connection with.\n` +
+      `Villain: The main obstacle or challenge faced by the hero, preventing them from achieving their goals.\n` +
+      `Passion: The deepest desires and aspirations of the hero, their dream state, or ideal vision of success.\n\n` +
+      `Business Details:\n` +
+      `Business Name: ${businessName}\n` +
+      `Nature of Business: ${natureOfBusiness}\n` +
+      `Unique Selling Proposition: ${uniqueSellingProposition}\n` +
+      `Positive Impact: ${positiveImpact}\n` +
+      `Core Business Values: ${coreValues}\n` +
+      `Focus on Regeneration and Ethics: ${regenerationFocus}\n` +
+      `Pricing Strategy: ${pricingStrategy}\n\n` +
+      `Write a 100-word story incorporating these elements.`;
 
     // Create a thread using the assistantId
     const thread = await openai.beta.threads.create();
@@ -164,6 +163,162 @@ app.post("/generate-story", async (req, res) => {
     res.status(500).send("An error occurred while generating the brand story.");
   }
 });
+
+// Endpoint to get 10 potential target audiences
+app.get("/target-audiences", async (req, res) => {
+  try {
+    const targetAudiences = await generateRealisticTargetAudiences();
+    res.json({ targetAudiences });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send("An error occurred while generating target audiences.");
+  }
+});
+
+// Endpoint to handle form submission and generate target audiences
+app.post("/submit-business-form", async (req, res) => {
+  try {
+    const businessDetails = req.body;
+    console.log("Received Business Details: ", businessDetails);
+
+    const targetAudiences = await generateRealisticTargetAudiences(
+      businessDetails
+    );
+    console.log("Generated Target Audiences: ", targetAudiences);
+
+    res.json({ targetAudiences });
+  } catch (error) {
+    console.error("Error in generating target audiences: ", error);
+    res
+      .status(500)
+      .send("An error occurred while generating target audiences.");
+  }
+});
+
+async function generateRealisticTargetAudiences(businessDetails) {
+  const prompt =
+    `Generate 10 target audiences for the following business details:\n` +
+    `Business Name: ${businessDetails.businessName}\n` +
+    `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
+    `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
+    `Positive Impact: ${businessDetails.positiveImpact}\n` +
+    `Core Business Values: ${businessDetails.coreValues}\n` +
+    `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
+    `Pricing Strategy: ${businessDetails.pricingStrategy}`;
+
+  const response = await generateTargetAudience(prompt);
+  return response.targetAudience.split("\n").slice(0, 10);
+}
+
+// Function to generate a single target audience description using the Assistant API
+async function generateTargetAudience(prompt) {
+  try {
+    const assistantDetails = await getOrCreateAssistant();
+
+    // Create a thread using the assistantId
+    const thread = await openai.beta.threads.create();
+
+    // Pass the prompt into the existing thread
+    await openai.beta.threads.messages.create(thread.id, {
+      role: "user",
+      content: prompt,
+    });
+
+    // Create a run using the assistantId
+    const run = await openai.beta.threads.runs.create(thread.id, {
+      assistant_id: assistantDetails.assistantId,
+    });
+
+    // Fetch run-status
+    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+
+    // Polling mechanism to check if runStatus is completed
+    while (runStatus.status !== "completed") {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    }
+
+    // Get the last assistant message from the messages array
+    const messages = await openai.beta.threads.messages.list(thread.id);
+    const lastMessageForRun = messages.data
+      .filter(
+        (message) => message.run_id === run.id && message.role === "assistant"
+      )
+      .pop();
+
+    if (lastMessageForRun) {
+      return { targetAudience: lastMessageForRun.content[0].text.value };
+    } else {
+      throw new Error("No response received from the assistant.");
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error("An error occurred while generating the target audience.");
+  }
+}
+
+// Endpoint to generate a brand story based on the selected target audience
+app.post("/generate-story-for-audience", async (req, res) => {
+  try {
+    // Extracting data from the request body
+    const { targetAudience } = req.body;
+
+    // Get or create the assistant
+    const assistantDetails = await getOrCreateAssistant();
+
+    // Formulate the prompt for the assistant with the selected target audience
+    const prompt = `Generate a brand story for a business targeting the following audience:
+      Target Audience: ${targetAudience}
+      Use the 'hero, villain, passion' storytelling framework. The target audience is the hero. Identify the villain (main challenge they face) and passion (their deepest desires).`;
+
+    // Create a thread using the assistantId
+    const thread = await openai.beta.threads.create();
+
+    // Pass the prompt into the existing thread
+    await openai.beta.threads.messages.create(thread.id, {
+      role: "user",
+      content: prompt,
+    });
+
+    // Create a run using the assistantId
+    const run = await openai.beta.threads.runs.create(thread.id, {
+      assistant_id: assistantDetails.assistantId,
+    });
+
+    // Fetch run-status
+    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+
+    // Polling mechanism to check if runStatus is completed
+    while (runStatus.status !== "completed") {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    }
+
+    // Get the last assistant message from the messages array
+    const messages = await openai.beta.threads.messages.list(thread.id);
+    const lastMessageForRun = messages.data
+      .filter(
+        (message) => message.run_id === run.id && message.role === "assistant"
+      )
+      .pop();
+
+    if (lastMessageForRun) {
+      res.json({ brandStory: lastMessageForRun.content[0].text.value });
+    } else {
+      res.status(500).send("No response received from the assistant.");
+    }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send(
+        "An error occurred while generating the brand story for the selected target audience."
+      );
+  }
+});
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
