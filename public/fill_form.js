@@ -14,5 +14,4 @@ document.getElementById("regenerationFocus").value =
 document.getElementById("pricingStrategy").value =
   "Our pricing strategy is premium, reflecting the quality and ethical sourcing of our products. We also offer membership discounts and loyalty programs for regular customers.";
 
-// Uncomment the next line if you want to automatically submit the form after filling it out.
-// document.getElementById('submitBtn').click();
+

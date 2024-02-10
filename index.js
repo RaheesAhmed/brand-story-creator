@@ -34,17 +34,23 @@ async function getOrCreateAssistant() {
     const assistantData = await fsPromises.readFile(assistantFilePath, "utf8");
     assistantDetails = JSON.parse(assistantData);
   } catch (error) {
-    // If file does not exist, create a new assistant
-    const assistantConfig = {
-      name: "Conscious Brand Sage",
-      instructions:
-        "Conscious Brand Sage is a conversational and approachable GPT, specializing in branding for regenerative, conscious businesses. It excels in identifying target audiences and crafting brand stories in the hero, villain, passion format, aligned with sustainability and ethical principles. This GPT offers advice on creating impactful brand narratives and visual identities, infused with regenerative values. It asks for more details to provide precise, helpful advice, steering clear of strategies that contradict ethical or sustainability goals. Conscious Brand Sage uses language that is familiar and engaging to the regenerative business community, making complex concepts more relatable and accessible. Its approach is to offer personalized, context-specific guidance in a friendly and conversational manner, ensuring users feel supported in aligning their branding with their values and business goals.",
-      tools: [{ type: "retrieval" }, { type: "code_interpreter" }],
-      model: "gpt-4-1106-preview",
-    };
+    //Retrive assistant
+    const assistant = await openai.beta.assistants.retrieve(
+      process.env.ASSISTANT_ID,
+      "name",
+      "model",
+      "instructions",
+      "tools"
+    );
 
-    const assistant = await openai.beta.assistants.create(assistantConfig);
-    assistantDetails = { assistantId: assistant.id, ...assistantConfig };
+    assistantDetails = {
+      assistantId: assistant.id,
+      assistantName: assistant.name,
+      assistantInstructions: assistant.instructions,
+      assistantModel: assistant.model,
+      assistantTools: assistant.tools,
+    };
+    console.log(assistantDetails);
 
     // Save the assistant details to assistant.json
     await fsPromises.writeFile(
@@ -155,6 +161,9 @@ app.post("/generate-story", async (req, res) => {
 
     if (lastMessageForRun) {
       res.json({ brandStory: lastMessageForRun.content[0].text.value });
+      console.log(
+        res.json({ brandStory: lastMessageForRun.content[0].text.value })
+      );
     } else {
       res.status(500).send("No response received from the assistant.");
     }
@@ -169,6 +178,7 @@ app.get("/target-audiences", async (req, res) => {
   try {
     const targetAudiences = await generateRealisticTargetAudiences();
     res.json({ targetAudiences });
+    console.log(res.json({ targetAudiences }));
   } catch (error) {
     console.error(error);
     res
@@ -199,17 +209,23 @@ app.post("/submit-business-form", async (req, res) => {
 
 async function generateRealisticTargetAudiences(businessDetails) {
   const prompt =
-    `Generate 10 target audiences for the following business details:\n` +
+    `List 10 target audiences for a business focused on sustainability and ethical practices. 
+  Here are the details:\n` +
     `Business Name: ${businessDetails.businessName}\n` +
     `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
     `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
     `Positive Impact: ${businessDetails.positiveImpact}\n` +
     `Core Business Values: ${businessDetails.coreValues}\n` +
     `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
-    `Pricing Strategy: ${businessDetails.pricingStrategy}`;
+    `Pricing Strategy: ${businessDetails.pricingStrategy}\n\n` +
+    `Please format your response as {targetAudiences:'{"name":"add name here","description":"Add descrption here"} donot use any other format. and never ever use the json word with the returned json object.`;
 
   const response = await generateTargetAudience(prompt);
-  return response.targetAudience.split("\n").slice(0, 10);
+  //format response as JSON
+
+  let responseData = response.targetAudience;
+
+  return responseData;
 }
 
 // Function to generate a single target audience description using the Assistant API
