@@ -198,7 +198,7 @@ app.post("/submit-business-form", async (req, res) => {
     );
     console.log("Generated Target Audiences: ", targetAudiences);
 
-    res.json({ targetAudiences });
+    res.json({ targetAudiences: targetAudiences });
   } catch (error) {
     console.error("Error in generating target audiences: ", error);
     res
@@ -209,23 +209,20 @@ app.post("/submit-business-form", async (req, res) => {
 
 async function generateRealisticTargetAudiences(businessDetails) {
   const prompt =
-    `List 10 target audiences for a business focused on sustainability and ethical practices. 
-  Here are the details:\n` +
+    `list 10 different target audiences suited for my new emerging dream business in beautiful json format dont not add json keyword infront of response and your response should be like{[targetAudience:{name:"add name here",descrption:"add descrption"},]}. Here is a 
+    description of my dream business:\n` +
     `Business Name: ${businessDetails.businessName}\n` +
     `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
     `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
     `Positive Impact: ${businessDetails.positiveImpact}\n` +
     `Core Business Values: ${businessDetails.coreValues}\n` +
     `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
-    `Pricing Strategy: ${businessDetails.pricingStrategy}\n\n` +
-    `Please format your response as {targetAudiences:'{"name":"add name here","description":"Add descrption here"} donot use any other format. and never ever use the json word with the returned json object.`;
+    `Pricing Strategy: ${businessDetails.pricingStrategy}`;
 
   const response = await generateTargetAudience(prompt);
-  //format response as JSON
-
   let responseData = response.targetAudience;
 
-  return responseData;
+  return responseData.split("\n");
 }
 
 // Function to generate a single target audience description using the Assistant API
