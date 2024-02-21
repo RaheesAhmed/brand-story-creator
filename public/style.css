@@ -245,3 +245,17 @@ body {
 .select-btn:hover {
   background-color: #9e1e57;
 }
+
+.fixed-card {
+  height: 350px; /* Adjust the height as needed */
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body {
+  flex-grow: 1;
+}
+
+.select-audience-btn {
+  margin-top: auto; /* Align the button to the bottom of the card */
+}

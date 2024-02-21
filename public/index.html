@@ -167,10 +167,8 @@
           Create Brand Story
         </button>
         <div id="loadingIndicator" class="text-center my-3" style="display: none;">
-          <div class="spinner-border text-primary" role="status">
-              <span class="sr-only">Loading...</span>
-              
-          </div>
+          <img src="loading.gif" alt="Loading..." width="50" height="50" />
+          
           <p>Processing, please wait...</p>
       </div>
         
@@ -193,6 +191,13 @@
     <script>
       
       $(document).ready(function () {
+        let submitBtn= document.getElementById('submitBtn');
+        let createStoryBtn= document.getElementById('createStoryBtn');
+
+        submitBtn.addEventListener('click', function(){
+          submitBtn.style.display= 'none';
+          createStoryBtn.style.display= 'block';
+        });
         // Submit the business form and get target audiences
         $("#submitBtn").click(function (event) {
           event.preventDefault();
@@ -208,7 +213,7 @@
           };
           showLoading(true);
 
-          console.log(`Data Recieved: ${formData.businessName}, ${formData.natureOfBusiness}, ${formData.uniqueSellingProposition}, ${formData.positiveImpact}, ${formData.targetAudience}, ${formData.coreValues}, ${formData.regenerationFocus}, ${formData.pricingStrategy}`)
+          
 
           $.ajax({
     type: "POST",
@@ -220,7 +225,12 @@
 
   // Join the array elements into a single string and parse it as JSON
   var targetAudiencesString = response.targetAudiences.join('');
+  try {
   var targetAudiencesData = JSON.parse(targetAudiencesString);
+} catch (error) {
+  console.error("Error parsing JSON:", error);
+}
+
 
   // Extract the target audiences array from the parsed JSON
   var targetAudiences = targetAudiencesData.targetAudiences;
@@ -234,7 +244,11 @@ targetAudiences.forEach(function(audience) {
         <div class="card-body">
           <h5 class="card-title">${audience.name}</h5>
           <p class="card-text">${audience.description}</p>
-          <button class="select-btn" onclick="selectTargetAudience('${audience}')">Select</button>
+          <button class="btn btn-primary select-audience-btn" data-audience="${audience.description}" style="
+            background-color: rgb(15, 15, 15);
+            color: white;
+            font-weight: 600;
+          ">Select</button>
         </div>
       </div>
     </div>
@@ -262,10 +276,65 @@ targetAudiencesHtml += '</div>';
 });
 });
  
+// Create the brand story when the Create Brand Story button is clicked
+$("#createStoryBtn").click(function() {
+  var businessDetails = {
+    businessName: $("#businessName").val(),
+    natureOfBusiness: $("#natureOfBusiness").val(),
+    uniqueSellingProposition: $("#uniqueSellingProposition").val(),
+    positiveImpact: $("#positiveImpact").val(),
+    targetAudience: $("#targetAudience").val(),
+    coreValues: $("#coreValues").val(),
+    regenerationFocus: $("#regenerationFocus").val(),
+    pricingStrategy: $("#pricingStrategy").val()
+  };
+  var selectedAudience = $("#targetAudience").val();
+  generateBrandStory(businessDetails, selectedAudience);
+});
+
+function showAlert() {
+  var html=`<div class="alert alert-success" role="alert">
+  Selected...!
+</div>`
+
+alert(html);
+}
+
+$(document).on('click', '.select-audience-btn', function() {
+          var selectedAudience = $(this).data('audience');
+          selectTargetAudience(selectedAudience);
+          showAlert();
+
+        });
+
+
+
 function selectTargetAudience(audienceName) {
   $("#targetAudience").val(audienceName);
 }
 
+function generateBrandStory(businessDetails, selectedAudience) {
+        businessDetails.selectedTargetAudience = selectedAudience;
+        showLoading(true);
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:3000/generate-story",
+            contentType: "application/json",
+            data: JSON.stringify(businessDetails),
+            success: function(response) {
+                $("#brandStory").html(`<p><span style="font-weight:800">Brand Story</span>: ${response.brandStory}</p>`);
+            },
+            error: function(error) {
+                console.error("Error:", error);
+                $("#brandStory").html("<p>An error occurred while generating the brand story.</p>");
+            },
+            complete: function() {
+                // Hide the loader after the AJAX request completes
+                showLoading(false);
+            }
+        });
+    }
+      
 
 function showLoading(show) {
           if (show) {

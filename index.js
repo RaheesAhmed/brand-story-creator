@@ -273,64 +273,64 @@ async function generateTargetAudience(prompt) {
 }
 
 // Endpoint to generate a brand story based on the selected target audience
-app.post("/generate-story-for-audience", async (req, res) => {
-  try {
-    // Extracting data from the request body
-    const { targetAudience } = req.body;
+// app.post("/generate-story-for-audience", async (req, res) => {
+//   try {
+//     // Extracting data from the request body
+//     const { targetAudience } = req.body;
 
-    // Get or create the assistant
-    const assistantDetails = await getOrCreateAssistant();
+//     // Get or create the assistant
+//     const assistantDetails = await getOrCreateAssistant();
 
-    // Formulate the prompt for the assistant with the selected target audience
-    const prompt = `Generate a brand story for a business targeting the following audience:
-      Target Audience: ${targetAudience}
-      Use the 'hero, villain, passion' storytelling framework. The target audience is the hero. Identify the villain (main challenge they face) and passion (their deepest desires).`;
+//     // Formulate the prompt for the assistant with the selected target audience
+//     const prompt = `Generate a brand story for a business targeting the following audience:
+//       Target Audience: ${targetAudience}
+//       Use the 'hero, villain, passion' storytelling framework. The target audience is the hero. Identify the villain (main challenge they face) and passion (their deepest desires).`;
 
-    // Create a thread using the assistantId
-    const thread = await openai.beta.threads.create();
+//     // Create a thread using the assistantId
+//     const thread = await openai.beta.threads.create();
 
-    // Pass the prompt into the existing thread
-    await openai.beta.threads.messages.create(thread.id, {
-      role: "user",
-      content: prompt,
-    });
+//     // Pass the prompt into the existing thread
+//     await openai.beta.threads.messages.create(thread.id, {
+//       role: "user",
+//       content: prompt,
+//     });
 
-    // Create a run using the assistantId
-    const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: assistantDetails.assistantId,
-    });
+//     // Create a run using the assistantId
+//     const run = await openai.beta.threads.runs.create(thread.id, {
+//       assistant_id: assistantDetails.assistantId,
+//     });
 
-    // Fetch run-status
-    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+//     // Fetch run-status
+//     let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
 
-    // Polling mechanism to check if runStatus is completed
-    while (runStatus.status !== "completed") {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-    }
+//     // Polling mechanism to check if runStatus is completed
+//     while (runStatus.status !== "completed") {
+//       await new Promise((resolve) => setTimeout(resolve, 1000));
+//       runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+//     }
 
-    // Get the last assistant message from the messages array
-    const messages = await openai.beta.threads.messages.list(thread.id);
-    const lastMessageForRun = messages.data
-      .filter(
-        (message) => message.run_id === run.id && message.role === "assistant"
-      )
-      .pop();
+//     // Get the last assistant message from the messages array
+//     const messages = await openai.beta.threads.messages.list(thread.id);
+//     const lastMessageForRun = messages.data
+//       .filter(
+//         (message) => message.run_id === run.id && message.role === "assistant"
+//       )
+//       .pop();
 
-    if (lastMessageForRun) {
-      res.json({ brandStory: lastMessageForRun.content[0].text.value });
-    } else {
-      res.status(500).send("No response received from the assistant.");
-    }
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send(
-        "An error occurred while generating the brand story for the selected target audience."
-      );
-  }
-});
+//     if (lastMessageForRun) {
+//       res.json({ brandStory: lastMessageForRun.content[0].text.value });
+//     } else {
+//       res.status(500).send("No response received from the assistant.");
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res
+//       .status(500)
+//       .send(
+//         "An error occurred while generating the brand story for the selected target audience."
+//       );
+//   }
+// });
 
 // Start the server
 const PORT = process.env.PORT || 3000;
