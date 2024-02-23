@@ -66,22 +66,18 @@ $(document).ready(function () {
     var targetAudiencesHtml = '<div class="row">';
     targetAudiences.forEach(function (audience) {
       targetAudiencesHtml += `
-      <div class="col-md-4">
-        <div class="card mb-4 card-custom">
-          <div class="card-body">
-            <h5 class="card-title">${audience.Name}</h5>
-            <p class="card-text">${audience.Characteristics}</p>
-            <button class="btn btn-primary select-audience-btn" data-audience="${
-              (audience.Name, audience.Characteristics)
-            }" style="
-              background-color: rgb(15, 15, 15);
-              color: white;
-              font-weight: 600;
-            ">Select</button>
-          </div>
+    <div class="col-md-4">
+      <div class="card mb-4 card-custom fixed">
+        <div class="card-body">
+          <h5 class="card-title">${audience.Name}</h5>
+          <p class="card-text">${audience.Characteristics}</p>
+          <button class="btn select-audience-btn" data-audience="${
+            (audience.Name, audience.Characteristics)
+          }">Select</button>
         </div>
       </div>
-    `;
+    </div>
+  `;
     });
     targetAudiencesHtml += "</div>";
 

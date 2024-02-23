@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Business Idea Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -22,6 +23,7 @@
       integrity="sha384-BY+fdrpOd3gfeRvTSMT+VUZmA728cfF9Z2G42xpaRkUGu2i3DyzpTURDo5A6CaLK"
       crossorigin="anonymous"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" integrity="sha512-GWzVrcGlo0TxTRvz9ttioyYJ+Wwk9Ck0G81D+eO63BaqHaJ3YZX9wuqjwgfcV/MrB2PhaVX9DkYVhbFpStnqpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -34,112 +36,55 @@
         </p>
       </header>
       <form id="businessIdeaForm" class="mt-4">
+        
         <!-- Business Name -->
-        <div class="form-group">
-          <label for="businessName">Business Name/Working Title:</label>
-          <input
-            type="text"
-            class="form-control"
-            id="businessName"
-            name="businessName"
-            placeholder="Do you have a name or a working title for your business?"
-            required
-          />
-        </div>
+<div class="form-group">
+  <label for="businessName"><i class="fa fa-briefcase must"></i>Business Name/Working Title:</label>
+  <input type="text" class="form-control" id="businessName" name="businessName" placeholder="Do you have a name or a working title for your business?" required />
+</div>
 
-        <!-- Nature of Business and Services -->
-        <div class="form-group">
-          <label for="natureOfBusiness">Nature of Business and Services:</label>
-          <textarea
-            class="form-control"
-            id="natureOfBusiness"
-            name="natureOfBusiness"
-            rows="3"
-            placeholder="What are the products or services you plan to offer?"
-            required
-          ></textarea>
-        </div>
+<!-- Nature of Business and Services -->
+<div class="form-group">
+  <label for="natureOfBusiness"><i class="fa fa-leaf must"></i>Nature of Business and Services:</label>
+  <textarea class="form-control" id="natureOfBusiness" name="natureOfBusiness" rows="3" placeholder="What are the products or services you plan to offer?" required></textarea>
+</div>
 
-        <!-- Unique Selling Proposition -->
-        <div class="form-group">
-          <label for="uniqueSellingProposition"
-            >Unique Selling Proposition:</label
-          >
-          <textarea
-            class="form-control"
-            id="uniqueSellingProposition"
-            name="uniqueSellingProposition"
-            rows="3"
-            placeholder="What unique aspects make your business stand out?"
-            required
-          ></textarea>
-        </div>
+<!-- Unique Selling Proposition -->
+<div class="form-group">
+  <label for="uniqueSellingProposition"><i class="fa fa-star must"></i>Unique Selling Proposition:</label>
+  <textarea class="form-control" id="uniqueSellingProposition" name="uniqueSellingProposition" rows="3" placeholder="What unique aspects make your business stand out?" required></textarea>
+</div>
 
-        <!-- Positive Impact -->
-        <div class="form-group">
-          <label for="positiveImpact">Positive Impact:</label>
-          <textarea
-            class="form-control"
-            id="positiveImpact"
-            name="positiveImpact"
-            rows="3"
-            placeholder="Clarify the positive impact or change you wish to create through your business."
-            required
-          ></textarea>
-        </div>
+<!-- Positive Impact -->
+<div class="form-group">
+  <label for="positiveImpact"><i class="fa fa-heart must"></i>Positive Impact:</label>
+  <textarea class="form-control" id="positiveImpact" name="positiveImpact" rows="3" placeholder="Clarify the positive impact or change you wish to create through your business." required></textarea>
+</div>
 
-        <!-- Target Audience -->
-        <div class="form-group">
-          <label for="targetAudience">Target Audience:</label>
-          <textarea
-            class="form-control"
-            id="targetAudience"
-            name="targetAudience"
-            placeholder="Who are you most wanting to engage with?"
-            required
-          /></textarea>
-        </div>
+<!-- Target Audience -->
+<div class="form-group">
+  <label for="targetAudience"><i class="fa fa-users must"></i>Target Audience:</label>
+  <textarea class="form-control" id="targetAudience" name="targetAudience" placeholder="Who are you most wanting to engage with?" required /></textarea>
+</div>
 
-        <!-- Core Business Values -->
-        <div class="form-group">
-          <label for="coreValues">Core Business Values:</label>
-          <textarea
-            class="form-control"
-            id="coreValues"
-            name="coreValues"
-            rows="3"
-            required
-            placeholder="What are the fundamental values that drive your business?"
-          ></textarea>
-        </div>
+<!-- Core Business Values -->
+<div class="form-group">
+  <label for="coreValues"><i class="fa fa-anchor must"></i>Core Business Values:</label>
+  <textarea class="form-control" id="coreValues" name="coreValues" rows="3" required placeholder="What are the fundamental values that drive your business?"></textarea>
+</div>
 
-        <!-- Focus on Regeneration and Ethics -->
-        <div class="form-group">
-          <label for="regenerationFocus"
-            >Focus on Regeneration and Ethics:</label
-          >
-          <textarea
-            class="form-control"
-            id="regenerationFocus"
-            name="regenerationFocus"
-            rows="3"
-            placeholder="How does your business plan to incorporate sustainability and ethical practices?"
-            required
-          ></textarea>
-        </div>
+<!-- Focus on Regeneration and Ethics -->
+<div class="form-group">
+  <label for="regenerationFocus"><i class="fa fa-leaf must"></i>Focus on Regeneration and Ethics:</label>
+  <textarea class="form-control" id="regenerationFocus" name="regenerationFocus" rows="3" placeholder="How does your business plan to incorporate sustainability and ethical practices?" required></textarea>
+</div>
 
-        <!-- Pricing Strategy -->
-        <div class="form-group">
-          <label for="pricingStrategy">Pricing Strategy:</label>
-          <input
-            type="text"
-            class="form-control"
-            id="pricingStrategy"
-            name="pricingStrategy"
-            placeholder="Are you considering a budget-friendly or premium approach?"
-            required
-          />
-        </div>
+<!-- Pricing Strategy -->
+<div class="form-group">
+  <label for="pricingStrategy"><i class="fa fa-tag must"></i>Pricing Strategy:</label>
+  <input type="text" class="form-control" id="pricingStrategy" name="pricingStrategy" placeholder="Are you considering a budget-friendly or premium approach?" required />
+</div>
+
 
         <button
           type="button"
