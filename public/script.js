@@ -101,6 +101,7 @@ $(document).ready(function () {
 
   // Generate the brand story
   function generateBrandStory(businessDetails) {
+    $("#brandStory").show();
     showLoading(true);
     $.ajax({
       type: "POST",
@@ -109,7 +110,9 @@ $(document).ready(function () {
       data: JSON.stringify(businessDetails),
       success: function (response) {
         $("#brandStory").html(
-          `<p><span style="font-weight:800">Brand Story</span>: ${response.brandStory}</p>`
+          `<p style="padding:1rem"><span style="font-weight:800; color: #d5347c;
+          font-size: 2rem;">Brand Story</span></br> ${response.brandStory}</p>
+          </br>`
         );
         showLoading(false);
       },

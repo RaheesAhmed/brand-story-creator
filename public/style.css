@@ -5,7 +5,7 @@
   
 
 h2 {
-  color: #333;
+  color: #d4347c;
   text-align: center;
   font-family: "Poppins", sans-serif;
   font-weight: 700;
@@ -13,7 +13,7 @@ h2 {
 }
 
 .form-group label {
-  color: #555;
+  color:#d4347c;
 }
 
 .form-control {
@@ -34,7 +34,7 @@ h2 {
 #brandStory {
   margin-top: 20px;
   padding: 15px;
-  background-color: #e9ecef;
+  background-color: #ffffff;
   border-radius: 4px;
 }
 .form-control:focus {
@@ -218,7 +218,7 @@ body {
 }
 
 .card-custom .card-title {
-  color: #333;
+  color: #d03179;
   font-weight: bold;
 }
 
@@ -272,13 +272,13 @@ body {
 }
 
 .header h1 {
-  color: #333;
+  color: #d4347c;
   font-size: 28px;
   font-weight: bold;
 }
 
 .header p {
-  color: #666;
+  color: #9facc5;
   font-size: 16px;
 }
 
@@ -288,7 +288,7 @@ body {
 
 .form-group label {
   font-weight: 600;
-  color: #333;
+  
 }
 
 .form-group i {
