@@ -49,6 +49,7 @@ async function getOrCreateAssistant() {
       assistantInstructions: assistant.instructions,
       assistantModel: assistant.model,
       assistantTools: assistant.tools,
+      response_format: { type: "json_object" },
     };
     console.log(assistantDetails);
 
@@ -169,7 +170,11 @@ app.post("/generate-story", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send("An error occurred while generating the brand story.");
+    if (!res.headersSent) {
+      res
+        .status(500)
+        .send("An error occurred while generating the brand story.");
+    }
   }
 });
 
@@ -177,8 +182,10 @@ app.post("/generate-story", async (req, res) => {
 app.get("/target-audiences", async (req, res) => {
   try {
     const targetAudiences = await generateRealisticTargetAudiences();
+
+    targetAudiences = targetAudiences.targetAudience;
+
     res.json({ targetAudiences });
-    console.log(res.json({ targetAudiences }));
   } catch (error) {
     console.error(error);
     res
@@ -193,144 +200,76 @@ app.post("/submit-business-form", async (req, res) => {
     const businessDetails = req.body;
     console.log("Received Business Details: ", businessDetails);
 
-    const targetAudiences = await generateRealisticTargetAudiences(
-      businessDetails
-    );
-    console.log("Generated Target Audiences: ", targetAudiences);
+    const targetAudiences = await generateTargetAudiences(businessDetails);
 
-    res.json({ targetAudiences: targetAudiences });
+    res.json(targetAudiences);
   } catch (error) {
     console.error("Error in generating target audiences: ", error);
-    res
-      .status(500)
-      .send("An error occurred while generating target audiences.");
+    if (!res.headersSent) {
+      res
+        .status(500)
+        .send("An error occurred while generating the brand story.");
+    }
   }
 });
 
-async function generateRealisticTargetAudiences(businessDetails) {
-  const prompt =
-    `list 10 different target audiences suited for my new emerging dream business in beautiful json format dont not add json keyword infront of response and your response should be like{[targetAudience:{name:"add name here",descrption:"add descrption"},]}. Here is a 
-    description of my dream business:\n` +
-    `Business Name: ${businessDetails.businessName}\n` +
-    `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
-    `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
-    `Positive Impact: ${businessDetails.positiveImpact}\n` +
-    `Core Business Values: ${businessDetails.coreValues}\n` +
-    `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
-    `Pricing Strategy: ${businessDetails.pricingStrategy}`;
+const generateTargetAudiences = async (businessDetails) => {
+  console.log("Generating target audiences for business details...");
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `Conscious Brand Sage is a conversational and approachable GPT, specializing in branding for regenerative, conscious businesses. It excels in identifying target audiences and crafting brand stories in the hero, villain, passion format, aligned with sustainability and ethical principles. This GPT offers advice on creating impactful brand narratives and visual identities, infused with regenerative values. It asks for more details to provide precise, helpful advice, steering clear of strategies that contradict ethical or sustainability goals. Conscious Brand Sage uses language that is familiar and engaging to the regenerative business community, making complex concepts more relatable and accessible. Its approach is to offer personalized, context-specific guidance in a friendly and conversational manner, ensuring users feel supported in aligning their branding with their values and business goals.`,
+      },
+      {
+        role: "user",
+        content:
+          `Please list 10 different target audiences suited for my new emerging dream business. The description of my dream business is as follows::\n` +
+          `Business Name: ${businessDetails.businessName}\n` +
+          `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
+          `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
+          `Positive Impact: ${businessDetails.positiveImpact}\n` +
+          `Core Business Values: ${businessDetails.coreValues}\n` +
+          `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
+          `Pricing Strategy: ${businessDetails.pricingStrategy} \n` +
+          `Based on this information, I need a clean array of objects detailing target audiences use this format {"TargetAudiences": [
+            {
+                "Name": "Eco-Conscious Consumers",
+                "Characteristics": "Individuals who prioritize sustainability and are willing to pay more for organic, eco-friendly products."
+              },
+              ...
+]
+      }
+            .Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response also just give the response object.
+    `,
+      },
+    ],
+    model: "gpt-4-1106-preview",
+    max_tokens: 2000,
+  });
+  console.log("OPENAI RESPONSE: ", completion);
+  let targetAudiencesString = completion.choices[0].message.content;
 
-  const response = await generateTargetAudience(prompt);
-  let responseData = response.targetAudience;
+  // Save the response and get the parsed data
+  const targetAudiences = await saveAndReadResponse(targetAudiencesString);
+  console.log("SENDED DATA", targetAudiences);
+  return targetAudiences;
+};
 
-  return responseData.split("\n");
-}
+const saveAndReadResponse = async (response) => {
+  await fsPromises.writeFile("./response.json", response); // Save the raw response
+  const data = await fsPromises.readFile("./response.json", "utf8");
+  const targetAudiences = JSON.parse(data); // Parse the saved response
+  return targetAudiences;
+};
 
-// Function to generate a single target audience description using the Assistant API
-async function generateTargetAudience(prompt) {
-  try {
-    const assistantDetails = await getOrCreateAssistant();
-
-    // Create a thread using the assistantId
-    const thread = await openai.beta.threads.create();
-
-    // Pass the prompt into the existing thread
-    await openai.beta.threads.messages.create(thread.id, {
-      role: "user",
-      content: prompt,
-    });
-
-    // Create a run using the assistantId
-    const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: assistantDetails.assistantId,
-    });
-
-    // Fetch run-status
-    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-
-    // Polling mechanism to check if runStatus is completed
-    while (runStatus.status !== "completed") {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-    }
-
-    // Get the last assistant message from the messages array
-    const messages = await openai.beta.threads.messages.list(thread.id);
-    const lastMessageForRun = messages.data
-      .filter(
-        (message) => message.run_id === run.id && message.role === "assistant"
-      )
-      .pop();
-
-    if (lastMessageForRun) {
-      return { targetAudience: lastMessageForRun.content[0].text.value };
-    } else {
-      throw new Error("No response received from the assistant.");
-    }
-  } catch (error) {
-    console.error(error);
-    throw new Error("An error occurred while generating the target audience.");
-  }
-}
-
-// Endpoint to generate a brand story based on the selected target audience
-// app.post("/generate-story-for-audience", async (req, res) => {
-//   try {
-//     // Extracting data from the request body
-//     const { targetAudience } = req.body;
-
-//     // Get or create the assistant
-//     const assistantDetails = await getOrCreateAssistant();
-
-//     // Formulate the prompt for the assistant with the selected target audience
-//     const prompt = `Generate a brand story for a business targeting the following audience:
-//       Target Audience: ${targetAudience}
-//       Use the 'hero, villain, passion' storytelling framework. The target audience is the hero. Identify the villain (main challenge they face) and passion (their deepest desires).`;
-
-//     // Create a thread using the assistantId
-//     const thread = await openai.beta.threads.create();
-
-//     // Pass the prompt into the existing thread
-//     await openai.beta.threads.messages.create(thread.id, {
-//       role: "user",
-//       content: prompt,
-//     });
-
-//     // Create a run using the assistantId
-//     const run = await openai.beta.threads.runs.create(thread.id, {
-//       assistant_id: assistantDetails.assistantId,
-//     });
-
-//     // Fetch run-status
-//     let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-
-//     // Polling mechanism to check if runStatus is completed
-//     while (runStatus.status !== "completed") {
-//       await new Promise((resolve) => setTimeout(resolve, 1000));
-//       runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-//     }
-
-//     // Get the last assistant message from the messages array
-//     const messages = await openai.beta.threads.messages.list(thread.id);
-//     const lastMessageForRun = messages.data
-//       .filter(
-//         (message) => message.run_id === run.id && message.role === "assistant"
-//       )
-//       .pop();
-
-//     if (lastMessageForRun) {
-//       res.json({ brandStory: lastMessageForRun.content[0].text.value });
-//     } else {
-//       res.status(500).send("No response received from the assistant.");
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res
-//       .status(500)
-//       .send(
-//         "An error occurred while generating the brand story for the selected target audience."
-//       );
-//   }
-// });
+//replace the old response with new response
+const replaceResponse = async (response) => {
+  await fsPromises.writeFile(
+    "./response.json",
+    JSON.stringify(response, null, 2)
+  );
+};
 
 // Start the server
 const PORT = process.env.PORT || 3000;

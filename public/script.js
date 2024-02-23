@@ -1,14 +1,12 @@
 $(document).ready(function () {
-  let submitBtn = document.getElementById("submitBtn");
-  let createStoryBtn = document.getElementById("createStoryBtn");
-
-  submitBtn.addEventListener("click", function () {
-    submitBtn.style.display = "none";
-    createStoryBtn.style.display = "block";
+  // Simplify event listeners for button clicks
+  $("#submitBtn").on("click", function () {
+    $(this).hide();
+    $("#createStoryBtn").show();
   });
-  // Submit the business form and get target audiences
-  $("#submitBtn").click(function (event) {
-    event.preventDefault();
+
+  // Function to handle form submission and retrieve target audiences
+  function submitBusinessForm() {
     var formData = {
       businessName: $("#businessName").val(),
       natureOfBusiness: $("#natureOfBusiness").val(),
@@ -23,44 +21,13 @@ $(document).ready(function () {
 
     $.ajax({
       type: "POST",
-      url: "http://localhost:3000/submit-business-form", // Correct endpoint
+      url: "http://localhost:3000/submit-business-form",
       contentType: "application/json",
       data: JSON.stringify(formData),
       success: function (response) {
-        console.log("Received Target Audiences: ", response);
-
-        // Join the array elements into a single string and parse it as JSON
-        var targetAudiencesString = response.targetAudiences.join("");
-        var targetAudiencesData = JSON.parse(targetAudiencesString);
-
-        // Extract the target audiences array from the parsed JSON
-        var targetAudiences = targetAudiencesData.targetAudiences;
-
-        // Generate HTML for Bootstrap cards
-        var targetAudiencesHtml = '<div class="row">';
-        targetAudiences.forEach(function (audience) {
-          targetAudiencesHtml += `
-<div class="col-md-4">
-  <div class="card mb-4 card-custom">
-    <div class="card-body">
-      <h5 class="card-title">${audience.name}</h5>
-      <p class="card-text">${audience.description}</p>
-      <button class="btn btn-primary select-audience-btn" data-audience="${audience.description}" style="
-        background-color: rgb(15, 15, 15);
-        color: white;
-        font-weight: 600;
-      ">Select</button>
-    </div>
-  </div>
-</div>
-`;
-        });
-        targetAudiencesHtml += "</div>";
-
-        targetAudiencesHtml += "</div>";
-
-        // Display the Bootstrap cards in the targetAudiences div
-        $("#targetAudiences").html(targetAudiencesHtml);
+        console.log("Response:", response);
+        var targetAudiences = response;
+        displayTargetAudiences(targetAudiences);
 
         showLoading(false);
       },
@@ -69,61 +36,99 @@ $(document).ready(function () {
         $("#brandStory").html(
           "<p>An error occurred while processing your request.</p>"
         );
+        showLoading(false);
       },
     });
-  });
-});
-
-// Create the brand story when the Create Brand Story button is clicked
-$("#createStoryBtn").click(function () {
-  var businessDetails = {
-    businessName: $("#businessName").val(),
-    natureOfBusiness: $("#natureOfBusiness").val(),
-    uniqueSellingProposition: $("#uniqueSellingProposition").val(),
-    positiveImpact: $("#positiveImpact").val(),
-    targetAudience: $("#targetAudience").val(),
-    coreValues: $("#coreValues").val(),
-    regenerationFocus: $("#regenerationFocus").val(),
-    pricingStrategy: $("#pricingStrategy").val(),
-  };
-  var selectedAudience = $("#targetAudience").val();
-  generateBrandStory(businessDetails, selectedAudience);
-});
-
-function selectTargetAudience(audienceName) {
-  $("#targetAudience").val(audienceName);
-}
-
-function generateBrandStory(businessDetails, selectedAudience) {
-  businessDetails.selectedTargetAudience = selectedAudience;
-  showLoading(true);
-  $.ajax({
-    type: "POST",
-    url: "http://localhost:3000/generate-story",
-    contentType: "application/json",
-    data: JSON.stringify(businessDetails),
-    success: function (response) {
-      $("#brandStory").html(
-        `<p><span style="font-weight:800">Brand Story</span>: ${response.brandStory}</p>`
-      );
-    },
-    error: function (error) {
-      console.error("Error:", error);
-      $("#brandStory").html(
-        "<p>An error occurred while generating the brand story.</p>"
-      );
-    },
-    complete: function () {
-      // Hide the loader after the AJAX request completes
-      showLoading(false);
-    },
-  });
-}
-
-function showLoading(show) {
-  if (show) {
-    $("#loadingIndicator").show();
-  } else {
-    $("#loadingIndicator").hide();
   }
-}
+
+  // Attach the submit action to the form submission event
+  $("#submitBtn").click(submitBusinessForm);
+
+  // Handler for "Create Brand Story" button
+  $("#createStoryBtn").click(function () {
+    var businessDetails = {
+      businessName: $("#businessName").val(),
+      natureOfBusiness: $("#natureOfBusiness").val(),
+      uniqueSellingProposition: $("#uniqueSellingProposition").val(),
+      positiveImpact: $("#positiveImpact").val(),
+      targetAudience: $("#targetAudience").val(),
+      coreValues: $("#coreValues").val(),
+      regenerationFocus: $("#regenerationFocus").val(),
+      pricingStrategy: $("#pricingStrategy").val(),
+      selectedTargetAudience: $("#targetAudience").val(),
+    };
+    generateBrandStory(businessDetails);
+  });
+
+  // Display target audiences
+  function displayTargetAudiences(response) {
+    var targetAudiences = response.TargetAudiences;
+    var targetAudiencesHtml = '<div class="row">';
+    targetAudiences.forEach(function (audience) {
+      targetAudiencesHtml += `
+      <div class="col-md-4">
+        <div class="card mb-4 card-custom">
+          <div class="card-body">
+            <h5 class="card-title">${audience.Name}</h5>
+            <p class="card-text">${audience.Characteristics}</p>
+            <button class="btn btn-primary select-audience-btn" data-audience="${
+              (audience.Name, audience.Characteristics)
+            }" style="
+              background-color: rgb(15, 15, 15);
+              color: white;
+              font-weight: 600;
+            ">Select</button>
+          </div>
+        </div>
+      </div>
+    `;
+    });
+    targetAudiencesHtml += "</div>";
+
+    // Display the Bootstrap cards in the targetAudiences div
+    $("#targetAudiences").html(targetAudiencesHtml);
+
+    showLoading(false);
+  }
+
+  // Alert display function
+  function showAlert() {
+    alert("Selected...!");
+  }
+
+  // Select target audience and show alert
+  $(document).on("click", ".select-audience-btn", function () {
+    var selectedAudience = $(this).data("audience");
+    $("#targetAudience").val(selectedAudience);
+    showAlert();
+  });
+
+  // Generate the brand story
+  function generateBrandStory(businessDetails) {
+    showLoading(true);
+    $.ajax({
+      type: "POST",
+      url: "http://localhost:3000/generate-story",
+      contentType: "application/json",
+      data: JSON.stringify(businessDetails),
+      success: function (response) {
+        $("#brandStory").html(
+          `<p><span style="font-weight:800">Brand Story</span>: ${response.brandStory}</p>`
+        );
+        showLoading(false);
+      },
+      error: function (error) {
+        console.error("Error:", error);
+        $("#brandStory").html(
+          "<p>An error occurred while generating the brand story.</p>"
+        );
+        showLoading(false);
+      },
+    });
+  }
+
+  // Show or hide loading indicator
+  function showLoading(show) {
+    $("#loadingIndicator").toggle(show);
+  }
+});
