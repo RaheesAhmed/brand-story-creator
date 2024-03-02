@@ -27,6 +27,64 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <header class="container-fluid">
+      <!-- Navigation bar -->
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <!-- Logo and brand name -->
+        <a class="navbar-brand" href="#">
+          <img
+            src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/f4QF3s4w4Ps9TD83xDp9/media/659f6f154a146ba290770422.png"
+            alt="Future Self™ Logo"
+            style="
+              height: 100px;
+              width: 100px;
+              background: transparent;
+              font-size: 20px;
+              font-family: 'Montserrat', sans-serif;
+            "
+          />
+          Conscious Brand Sage
+        </a>
+      </nav>
+      <p
+        style="
+          font-size: 52px !important;
+          font-weight: 300;
+          padding: 80px 0px 40px 0px;
+        "
+      >
+        Conscious Brand Sage
+      </p>
+    </header>
+    <section class="container my-5 p-5 form-container">
+      
+      <div class="row">
+        <!-- Video placeholder column -->
+        <div class="col-md-6">
+          <!-- Placeholder for the video; replace with actual video element or embed code -->
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe
+              class="embed-responsive-item"
+              
+              src="https://player.vimeo.com/video/906563295?app_id=122963&autoplay=1&controls=1"
+              
+            >
+              frameborder="0" allow="autoplay; fullscreen" allowfullscreen
+              ></iframe
+            >
+          </div>
+        </div>
+        <!-- Text description column -->
+        <div class="col-md-6">
+          <h2 class="mb-4"></h2>
+          <p>
+            After your guided visualization, it's time to crystallize your
+            vision. Use the form below to describe a pivotal moment of your
+            future self in your envisioned future.
+          </p>
+        </div>
+      </div>
+    </section>
     <div class="container my-5 p-5 form-container">
       <header class="header text-center mb-3">
         <h1>Welcome to the Conscious Brand Sage</h1>
@@ -86,17 +144,19 @@
 </div>
 
 
-        <button
+        <div class=" btn-container">
+          <span>
+            <button
           type="button"
           id="submitBtn"
           class="btn btn-custom mt-4 text-center align-center py-2 bg-[#b3226aFF]"
           style="
-            background-color: rgb(15, 15, 15);
+           
             color: white;
             font-weight: 600;
           "
         >
-          Generate Target Audeience
+          Generate Target Audiences
         </button>
         <button
           type="button"
@@ -106,15 +166,18 @@
             background-color: rgb(15, 15, 15);
             color: white;
             font-weight: 600;
-            display:none
+           
           "
         >
-          Create Brand Story
+          Create Brand Story Part-1
         </button>
+          </span>
+          
+          </div>
         <div id="loadingIndicator" class="text-center my-3" style="display: none;">
           <img src="loading.gif" alt="Loading..." width="50" height="50" />
 
-          <p>Processing, please wait...</p>
+          <p id="info-text"></p>
       </div>
 
       </form>
@@ -123,15 +186,57 @@
       <div id="brandStory" class="mt-4 card-custom" style="display: none; background-color: #ffffff;">
         </div>
 
+      <!-- Add a section to display the brand story part1 in Bootstrap cards -->
+      <div id="brandStoryPart1" class="mt-4">
+      
+
       <!-- Add a section to display the potential target audiences in Bootstrap cards -->
       <div id="targetAudiences" class="mt-4">
         
       </div>
 
-
+ <section class="container my-5 p-5 form-container" >
+     
+      <div class="row">
+        <!-- Video placeholder column -->
+        <div class="col-md-6">
+          <!-- Placeholder for the video; replace with actual video element or embed code -->
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe
+              class="embed-responsive-item"
+              src="https://player.vimeo.com/video/906563286?app_id=122963&autoplay=1&controls=1"
+            >
+              frameborder="0" allow="autoplay; fullscreen" allowfullscreen
+              ></iframe
+            >
+          </div>
+        </div>
+        <!-- Text description column -->
+        <div class="col-md-6">
+          <h2 class="mb-4"></h2>
+          <p>
+            Let your FutureSelfie™ become a powerful tool in your journey of
+            goal setting and motivation. Consider taking an inspired action
+            today that brings you one step closer to your vision. Remember,
+            small changes accumulate over time.
+          </p>
+          <p>
+            <span style="color: #b3226a; font-weight: 800">
+              <a
+                href="mailto:peter@futureselfinstitute.com"
+                style="color: #b3226a; font-weight: 800; text-decoration: none"
+                target="_blank"
+              >
+                Leave a Message</a
+              >
+            </span>
+          </p>
+        </div>
+      </div>
+    </section>
 
       <footer class="footer text-center mt-3">
-        <p>&copy; 2024 Business Idea Platform. All rights reserved.</p>
+        <p>&copy; 2024 Conscious Brand Sage. All rights reserved.</p>
       </footer>
     </div>
 

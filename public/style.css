@@ -5,7 +5,7 @@
   
 
 h2 {
-  color: #d4347c;
+  color: #2c2b2c;
   text-align: center;
   font-family: "Poppins", sans-serif;
   font-weight: 700;
@@ -13,7 +13,7 @@ h2 {
 }
 
 .form-group label {
-  color:#d4347c;
+  color:#2c2b2c;
 }
 
 .form-control {
@@ -51,13 +51,7 @@ h2 {
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
-.btn-custom {
-  background-color: #8e44ad; /* Custom color for the button */
-  border: none;
-}
-.btn-custom:hover {
-  background-color: #732d91; /* Darker shade for hover state */
-}
+
 .form-section-title {
   font-size: 1.5rem;
   color: #4a4a4a;
@@ -104,11 +98,13 @@ h2.mb-4 {
 
 /* Style the form background and shadow */
 form {
-  background-color: #fff;
-  padding: 60px;
-  max-width: 650px;
-  margin: auto;
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    padding: 60px;
+    
+    margin: auto;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 /* Adjust form input styles */
@@ -116,16 +112,19 @@ form {
   border-radius: 0; /* Example, if design has no rounded corners */
   border: 1px solid #ccc; /* Example, adjust as needed */
 }
-
-/* Style the button according to the design */
 .btn-custom {
-  background-color: #b3226a; /* Use the exact color from the design */
-  color: white;
-  font-weight: 600;
+  background: linear-gradient(to right, #b3226a, #d9367e);
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px 30px;
+  text-transform: uppercase;
 }
 
 .btn-custom:hover {
-  background-color: #9e1e5a; /* Darker shade for the hover state */
+ background: linear-gradient(to right, #b8015c, #85033d);
 }
 
 /* Style the footer to match the design */
@@ -173,10 +172,7 @@ body {
 
 
 
-.btn-custom {
-  background-color: #007bff;
-  color: white;
-}
+
 
 .card {
   margin-bottom: 1rem;
@@ -218,7 +214,7 @@ body {
 }
 
 .card-custom .card-title {
-  color: #d03179;
+  color: #2c2b2c;
   font-weight: bold;
 }
 
@@ -239,7 +235,7 @@ body {
 }
 
 .select-audience-btn:hover {
-  background: linear-gradient(to right, #d9367e, #b3226a);
+  background: red;
   color: #fff;
 }
 
@@ -265,6 +261,7 @@ body {
 }
 
 .form-container {
+
   
   border-radius: 10px;
  
@@ -272,7 +269,7 @@ body {
 }
 
 .header h1 {
-  color: #d4347c;
+  color: #2c2b2c;
   font-size: 28px;
   font-weight: bold;
 }
@@ -292,7 +289,7 @@ body {
 }
 
 .form-group i {
-  color: #b3226a;
+  color: #2c2b2c;
   margin-right: 5px;
 }
 
@@ -304,16 +301,7 @@ body {
   font-size: 14px;
 }
 
-.btn-custom {
-  background: linear-gradient(to right, #b3226a, #d9367e);
-  border: none;
-  border-radius: 20px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 10px 30px;
-  text-transform: uppercase;
-}
+
 
 .footer {
   color: #999;
@@ -323,4 +311,19 @@ body {
 
 .must{
   margin-right: 6px !important;
+}
+
+.btn-container{
+
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+
+.icons-container{
+  display: flex;
+  flex-direction: row;
+  gap: 25px;
+  margin-left: 20px;
 }

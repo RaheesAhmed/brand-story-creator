@@ -6,7 +6,6 @@ import fs from "fs";
 import { promises as fsPromises } from "fs";
 import OpenAI from "openai";
 import dotenv from "dotenv";
-
 // Load environment variables from .env file
 dotenv.config();
 
@@ -162,9 +161,8 @@ app.post("/generate-story", async (req, res) => {
 
     if (lastMessageForRun) {
       res.json({ brandStory: lastMessageForRun.content[0].text.value });
-      console.log(
-        res.json({ brandStory: lastMessageForRun.content[0].text.value })
-      );
+
+      heroVillanPassion(lastMessageForRun.content[0].text.value);
     } else {
       res.status(500).send("No response received from the assistant.");
     }
@@ -213,6 +211,90 @@ app.post("/submit-business-form", async (req, res) => {
   }
 });
 
+//eendpoint to handle the selected target audience and generate the hero,villan and passion story
+app.post("/brand-story-part1", async (req, res) => {
+  try {
+    const {
+      businessName,
+      natureOfBusiness,
+      uniqueSellingProposition,
+      positiveImpact,
+      coreValues,
+      regenerationFocus,
+      pricingStrategy,
+      selectedTargetAudience,
+    } = req.body;
+
+    const heroVillanPassionStory = await heroVillanPassion(
+      selectedTargetAudience,
+      businessName,
+      natureOfBusiness,
+      uniqueSellingProposition,
+      positiveImpact,
+      coreValues,
+      regenerationFocus,
+      pricingStrategy
+    );
+
+    res.json(heroVillanPassionStory);
+  } catch (error) {
+    console.error("Error in generating hero,villan and passion story: ", error);
+    if (!res.headersSent) {
+      res
+        .status(500)
+        .send(
+          "An error occurred while generating the hero,villan and passion story."
+        );
+    }
+  }
+});
+
+const heroVillanPassion = async (
+  selectedTargetAudience,
+  businessName,
+  natureOfBusiness,
+  uniqueSellingProposition,
+  positiveImpact,
+  coreValues,
+  regenerationFocus,
+  pricingStrategy
+) => {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4-1106-preview",
+    max_tokens: 2000,
+    messages: [
+      {
+        role: "system",
+        content:
+          "Conscious Brand Sage is a conversational and approachable GPT, specializing in branding for regenerative, conscious businesses. It excels in identifying target audiences and crafting brand stories in the hero, villain, passion format, aligned with sustainability and ethical principles. This GPT offers advice on creating impactful brand narratives and visual identities, infused with regenerative values. It asks for more details to provide precise, helpful advice, steering clear of strategies that contradict ethical or sustainability goals. Conscious Brand Sage uses language that is familiar and engaging to the regenerative business community, making complex concepts more relatable and accessible. Its approach is to offer personalized, context-specific guidance in a friendly and conversational manner, ensuring users feel supported in aligning their branding with their values and business goals.",
+      },
+      {
+        role: "system",
+        content: `Help me to identify the hero, villain and passion in my business brand story based on my selected target audience: ${selectedTargetAudience}
+Write 100 words about each one of them: the hero, the villain and the passion.
+The hero, villain, passion brand story format is a storytelling framework often used in marketing and branding to engage and connect with audiences on an emotional level. It follows a narrative structure that features three key elements:
+The hero represents my selected target audience with whom I am aiming to build a connection with. They are the individuals I want to engage and serve.
+The villain in this context refers to the obstacle or challenge that the hero faces, which is preventing them from achieving their goals or desired outcomes. It could be a problem, frustration, or barrier that hinders their progress or limits their potential.
+The passion in this story format represents the deepest desires and aspirations of the hero. It is what they want more than anything else, their dream state or ideal vision of success. It embodies their hopes, dreams, and aspirations that drive them forward.
+Here is a description of my dream business:
+Business Name: ${businessName}\n 
+Nature of Business: ${natureOfBusiness}\n
+Unique Selling Proposition: ${uniqueSellingProposition}\n
+Positive Impact: ${positiveImpact}\n
+Core Business Values: ${coreValues}\n
+Focus on Regeneration and Ethics: ${regenerationFocus}\n
+Pricing Strategy: ${pricingStrategy} \n
+give the response in this format {[{"Hero":"The hero is..."},{"Villain":"The villain is..."},{"Passion":"The passion is..."}]}`,
+      },
+    ],
+  });
+
+  const response = completion.choices[0].message.content;
+  console.log("RESPONSE", response);
+
+  return { response: response };
+};
+
 const generateTargetAudiences = async (businessDetails) => {
   console.log("Generating target audiences for business details...");
   const completion = await openai.chat.completions.create({
@@ -224,7 +306,7 @@ const generateTargetAudiences = async (businessDetails) => {
       {
         role: "user",
         content:
-          `Please list 10 different target audiences suited for my new emerging dream business. The description of my dream business is as follows::\n` +
+          `Please list 12 different target audiences suited for my new emerging dream business. The description of my dream business is as follows::\n` +
           `Business Name: ${businessDetails.businessName}\n` +
           `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
           `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
@@ -245,7 +327,7 @@ const generateTargetAudiences = async (businessDetails) => {
       },
     ],
     model: "gpt-4-1106-preview",
-    max_tokens: 2000,
+    max_tokens: 5000,
   });
   console.log("OPENAI RESPONSE: ", completion);
   let targetAudiencesString = completion.choices[0].message.content;
@@ -253,6 +335,7 @@ const generateTargetAudiences = async (businessDetails) => {
   // Save the response and get the parsed data
   const targetAudiences = await saveAndReadResponse(targetAudiencesString);
   console.log("SENDED DATA", targetAudiences);
+
   return targetAudiences;
 };
 
