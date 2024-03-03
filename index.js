@@ -88,7 +88,7 @@ app.post("/generate-story", async (req, res) => {
     // Retrieve the data from brandStoryPart1Data
     const part1Data = brandStoryPart1Data.tempKey;
     const prompt =
-      `Using the 'hero, villain, passion' from ${part1Data} storytelling framework, create a brand story for the selected target audience.\n\n` +
+      `Using the 'hero, villain, passion' from ${part1Data} , create a brand story for the selected target audience.\n\n` +
       `Target Audience: ${targetAudience}\n` +
       `Hero: The specific group of people targeted, aiming to build a connection with.\n` +
       `Villain: The main obstacle or challenge faced by the hero, preventing them from achieving their goals.\n` +
@@ -151,21 +151,26 @@ app.post("/generate-story", async (req, res) => {
   }
 });
 
-// Endpoint to handle form submission and generate target audiences
+// Endpoint to generate target audiencess
 app.post("/target-audience", async (req, res) => {
   try {
     const businessDetails = req.body;
     console.log("Received Business Details: ", businessDetails);
 
     const targetAudiences = await generateTargetAudiences(businessDetails);
+    try {
+      var savetargetesponse = await saveAndReadTargetAduience(targetAudiences);
+    } catch (error) {
+      console.error("Error in saving target audiences: ", error);
+    }
 
-    res.json(targetAudiences);
+    console.log("Target Audiences:", savetargetesponse);
+    res.json({ targetAudiences: savetargetesponse });
   } catch (error) {
     console.error("Error in generating target audiences: ", error);
+
     if (!res.headersSent) {
-      res
-        .status(500)
-        .send("An error occurred while generating the brand story.");
+      res.status(500).send("An error occurred while generating  brand story.");
     }
   }
 });
@@ -196,8 +201,14 @@ app.post("/brand-story-part1", async (req, res) => {
     );
     // Store the data in brandStoryPart1Data
     brandStoryPart1Data.tempKey = heroVillanPassionStory;
-
-    res.json(heroVillanPassionStory);
+    const savedheroVillanPassionStory = await saveBrandStoryPart1(
+      heroVillanPassionStory
+    );
+    console.log(
+      "Saved Hero, Villan, Passion Story:",
+      savedheroVillanPassionStory
+    );
+    res.json({ response: savedheroVillanPassionStory });
   } catch (error) {
     console.error("Error in generating hero,villan and passion story: ", error);
     if (!res.headersSent) {
@@ -210,6 +221,83 @@ app.post("/brand-story-part1", async (req, res) => {
   }
 });
 
+const generateTargetAudiences = async (businessDetails) => {
+  console.log("Generating target audiences for business details...");
+  const assistantDetails = await getOrCreateAssistant();
+  const prompt =
+    `Please list 12 different target audiences suited for my new emerging dream business. The description of my dream business is as follows::\n` +
+    `Business Name: ${businessDetails.businessName}\n` +
+    `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
+    `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
+    `Positive Impact: ${businessDetails.positiveImpact}\n` +
+    `Core Business Values: ${businessDetails.coreValues}\n` +
+    `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
+    `Pricing Strategy: ${businessDetails.pricingStrategy} \n` +
+    `Based on this information, I need a clean array of objects detailing target audiences use this format {"TargetAudiences": [
+      {
+          "Name": "Eco-Conscious Consumers",
+          "Characteristics": "Individuals who prioritize sustainability and are willing to pay more for organic, eco-friendly products."
+        },
+        ...
+]
+}
+      .Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response also just give the response object.
+`;
+
+  // Create a thread using the assistantId
+  const thread = await openai.beta.threads.create();
+
+  // Pass the prompt into the existing thread
+  await openai.beta.threads.messages.create(thread.id, {
+    role: "user",
+    content: prompt,
+  });
+
+  // Create a run using the assistantId
+  const run = await openai.beta.threads.runs.create(thread.id, {
+    assistant_id: assistantDetails.assistantId,
+  });
+
+  // Fetch run-status
+  let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+
+  // Polling mechanism to check if runStatus is completed
+  while (runStatus.status !== "completed") {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+  }
+
+  // Get the last assistant message from the messages array
+  const messages = await openai.beta.threads.messages.list(thread.id);
+  const lastMessageForRun = messages.data
+    .filter(
+      (message) => message.run_id === run.id && message.role === "assistant"
+    )
+    .pop();
+
+  if (lastMessageForRun) {
+    console.log(
+      "Raw Response from OpenAI:",
+      lastMessageForRun.content[0].text.value
+    );
+
+    // Clean up the response by removing the triple backticks and "json" string
+    const cleanedResponse = lastMessageForRun.content[0].text.value.replace(
+      /```json\n|\n```/g,
+      ""
+    );
+
+    console.log("Cleaned Response:", cleanedResponse);
+
+    // Parse the cleaned response
+    const targetAudiences = JSON.parse(cleanedResponse);
+    console.log("Parsed Target Audiences:", targetAudiences);
+    return targetAudiences;
+  } else {
+    throw new Error("No response received from the assistant.");
+  }
+};
+
 const heroVillanPassion = async (
   selectedTargetAudience,
   businessName,
@@ -220,91 +308,103 @@ const heroVillanPassion = async (
   regenerationFocus,
   pricingStrategy
 ) => {
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4-1106-preview",
-    max_tokens: 2000,
-    messages: [
-      {
-        role: "system",
-        content:
-          "Conscious Brand Sage is a conversational and approachable GPT, specializing in branding for regenerative, conscious businesses. It excels in identifying target audiences and crafting brand stories in the hero, villain, passion format, aligned with sustainability and ethical principles. This GPT offers advice on creating impactful brand narratives and visual identities, infused with regenerative values. It asks for more details to provide precise, helpful advice, steering clear of strategies that contradict ethical or sustainability goals. Conscious Brand Sage uses language that is familiar and engaging to the regenerative business community, making complex concepts more relatable and accessible. Its approach is to offer personalized, context-specific guidance in a friendly and conversational manner, ensuring users feel supported in aligning their branding with their values and business goals.",
-      },
-      {
-        role: "system",
-        content: `Help me to identify the hero, villain and passion in my business brand story based on my selected target audience: ${selectedTargetAudience}
-Write 100 words about each one of them: the hero, the villain and the passion.
-The hero, villain, passion brand story format is a storytelling framework often used in marketing and branding to engage and connect with audiences on an emotional level. It follows a narrative structure that features three key elements:
-The hero represents my selected target audience with whom I am aiming to build a connection with. They are the individuals I want to engage and serve.
-The villain in this context refers to the obstacle or challenge that the hero faces, which is preventing them from achieving their goals or desired outcomes. It could be a problem, frustration, or barrier that hinders their progress or limits their potential.
-The passion in this story format represents the deepest desires and aspirations of the hero. It is what they want more than anything else, their dream state or ideal vision of success. It embodies their hopes, dreams, and aspirations that drive them forward.
-Here is a description of my dream business:
-Business Name: ${businessName}\n 
-Nature of Business: ${natureOfBusiness}\n
-Unique Selling Proposition: ${uniqueSellingProposition}\n
-Positive Impact: ${positiveImpact}\n
-Core Business Values: ${coreValues}\n
-Focus on Regeneration and Ethics: ${regenerationFocus}\n
-Pricing Strategy: ${pricingStrategy} \n
-give the response in this format {[{"Hero":"The hero is..."},{"Villain":"The villain is..."},{"Passion":"The passion is..."}]}`,
-      },
-    ],
+  const assistantDetails = await getOrCreateAssistant();
+  const prompt = `Help me to identify the hero, villain and passion in my business brand story based on my selected target audience: ${selectedTargetAudience}
+    Write 100 words about each one of them: the hero, the villain and the passion.
+    The hero, villain, passion brand story format is a storytelling framework often used in marketing and branding to engage and connect with audiences on an emotional level. It follows a narrative structure that features three key elements:
+    The hero represents my selected target audience with whom I am aiming to build a connection with. They are the individuals I want to engage and serve.
+    The villain in this context refers to the obstacle or challenge that the hero faces, which is preventing them from achieving their goals or desired outcomes. It could be a problem, frustration, or barrier that hinders their progress or limits their potential.
+    The passion in this story format represents the deepest desires and aspirations of the hero. It is what they want more than anything else, their dream state or ideal vision of success. It embodies their hopes, dreams, and aspirations that drive them forward.
+    Here is a description of my dream business:
+    Business Name: ${businessName}\n 
+    Nature of Business: ${natureOfBusiness}\n
+    Unique Selling Proposition: ${uniqueSellingProposition}\n
+    Positive Impact: ${positiveImpact}\n
+    Core Business Values: ${coreValues}\n
+    Focus on Regeneration and Ethics: ${regenerationFocus}\n
+    Pricing Strategy: ${pricingStrategy} \n
+    give the response in this format {[{"Hero":"The hero is..."},{"Villain":"The villain is..."},{"Passion":"The passion is..."}]}`;
+
+  // Create a thread using the assistantId
+  const thread = await openai.beta.threads.create();
+
+  // Pass the prompt into the existing thread
+  await openai.beta.threads.messages.create(thread.id, {
+    role: "user",
+    content: prompt,
   });
 
-  const response = completion.choices[0].message.content;
-  console.log("RESPONSE", response);
-
-  return { response: response };
-};
-
-const generateTargetAudiences = async (businessDetails) => {
-  console.log("Generating target audiences for business details...");
-  const completion = await openai.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content: `Conscious Brand Sage is a conversational and approachable GPT, specializing in branding for regenerative, conscious businesses. It excels in identifying target audiences and crafting brand stories in the hero, villain, passion format, aligned with sustainability and ethical principles. This GPT offers advice on creating impactful brand narratives and visual identities, infused with regenerative values. It asks for more details to provide precise, helpful advice, steering clear of strategies that contradict ethical or sustainability goals. Conscious Brand Sage uses language that is familiar and engaging to the regenerative business community, making complex concepts more relatable and accessible. Its approach is to offer personalized, context-specific guidance in a friendly and conversational manner, ensuring users feel supported in aligning their branding with their values and business goals.`,
-      },
-      {
-        role: "user",
-        content:
-          `Please list 12 different target audiences suited for my new emerging dream business. The description of my dream business is as follows::\n` +
-          `Business Name: ${businessDetails.businessName}\n` +
-          `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
-          `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
-          `Positive Impact: ${businessDetails.positiveImpact}\n` +
-          `Core Business Values: ${businessDetails.coreValues}\n` +
-          `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
-          `Pricing Strategy: ${businessDetails.pricingStrategy} \n` +
-          `Based on this information, I need a clean array of objects detailing target audiences use this format {"TargetAudiences": [
-            {
-                "Name": "Eco-Conscious Consumers",
-                "Characteristics": "Individuals who prioritize sustainability and are willing to pay more for organic, eco-friendly products."
-              },
-              ...
-]
-      }
-            .Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response also just give the response object.
-    `,
-      },
-    ],
-    model: "gpt-4-1106-preview",
-    max_tokens: 4000,
+  // Create a run using the assistantId
+  const run = await openai.beta.threads.runs.create(thread.id, {
+    assistant_id: assistantDetails.assistantId,
   });
-  console.log("OPENAI RESPONSE: ", completion);
-  let targetAudiencesString = completion.choices[0].message.content;
 
-  // Save the response and get the parsed data
-  const targetAudiences = await saveAndReadResponse(targetAudiencesString);
-  console.log("SENDED DATA", targetAudiences);
+  // Fetch run-status
+  let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
 
-  return targetAudiences;
+  // Polling mechanism to check if runStatus is completed
+  while (runStatus.status !== "completed") {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+  }
+
+  // Get the last assistant message from the messages array
+  const messages = await openai.beta.threads.messages.list(thread.id);
+  const lastMessageForRun = messages.data
+    .filter(
+      (message) => message.run_id === run.id && message.role === "assistant"
+    )
+    .pop();
+
+  if (lastMessageForRun) {
+    const response = JSON.parse(
+      lastMessageForRun.content[0].text.value.replace(/```json\n|\n```/g, "")
+    );
+    console.log("Hero, Villain, Passion:", response);
+    const savedResponse = await saveBrandStoryPart1(response);
+    return savedResponse;
+  } else {
+    throw new Error("No response received from the assistant.");
+  }
+};
+const saveBrandStoryPart1 = async (response) => {
+  await fsPromises.writeFile(
+    "./BrandStoryPart1.json",
+    JSON.stringify(response)
+  ); // Convert object to JSON string
+  const data = await fsPromises.readFile("./BrandStoryPart1.json", "utf8");
+  const parsedData = JSON.parse(data); // Parse the saved response
+  return parsedData;
 };
 
-const saveAndReadResponse = async (response) => {
-  await fsPromises.writeFile("./response.json", response); // Save the raw response
-  const data = await fsPromises.readFile("./response.json", "utf8");
-  const targetAudiences = JSON.parse(data); // Parse the saved response
-  return targetAudiences;
+const saveAndReadTargetAduience = async (response) => {
+  try {
+    console.log("saving targetAudience into json file");
+    try {
+      console.log("Removing Unwanted format...");
+      // Remove backticks '`' and ```json ``` markers from the response
+      const cleanedResponse = JSON.stringify(response).replace(
+        /`|```json|```/g,
+        ""
+      );
+
+      await fsPromises.writeFile("./targetAudience.json", cleanedResponse);
+      console.log("File Saved"); // Convert object to JSON string
+    } catch (error) {
+      console.error("Error in saving target audiences: ", error);
+    }
+
+    try {
+      var data = await fsPromises.readFile("./targetAudience.json", "utf8");
+    } catch (error) {
+      console.error("Error in saving target audiences: ", error);
+    }
+    const targetAudiences = JSON.parse(data); // Parse the saved response
+    console.log("targetAudience saved into json file");
+    return targetAudiences;
+  } catch (error) {
+    console.error("Error in saving target audiences: ", error);
+  }
 };
 
 // Start the server

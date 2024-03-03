@@ -327,3 +327,31 @@ body {
   gap: 25px;
   margin-left: 20px;
 }
+
+@media (min-width: 320px) {
+
+
+.form-container {
+  border-radius: 10px;
+  padding: 15px !important;
+}
+.p-5{
+  padding: 10px !important;
+}
+.form{
+  padding:20px !important;
+}
+}
+
+.custom-alert {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: linear-gradient(to right, #b3226a, #d9367e);
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  display: none;
+  z-index: 1000;
+  width: 135px;
+}
