@@ -6,47 +6,47 @@
     },
     {
       "Name": "Health-Conscious Families",
-      "Characteristics": "Families looking to provide nutritious, organic foods to promote a healthy lifestyle."
+      "Characteristics": "Families looking for healthy, organic food options to ensure the wellbeing of their members."
     },
     {
-      "Name": "Local Food Supporters",
-      "Characteristics": "Members of the community who prefer to buy local to support the economy and reduce environmental impact."
+      "Name": "Millennial and Gen Z Shoppers",
+      "Characteristics": "Young adults who value sustainability, ethical sourcing, and are technologically savvy for online shopping and subscriptions."
     },
     {
-      "Name": "Millennial and Gen Z Activists",
-      "Characteristics": "Young adults interested in activism and making purchases that align with their ethical values."
-    },
-    {
-      "Name": "Busy Professionals",
-      "Characteristics": "Working individuals who seek convenient, healthy food options, including subscription-based delivery services."
-    },
-    {
-      "Name": "Green Entrepreneurs",
-      "Characteristics": "Business owners looking for sustainable suppliers to align with their own company's green practices."
+      "Name": "Localvores",
+      "Characteristics": "Consumers who prefer eating locally-sourced produce to support the local economy and minimize carbon footprint."
     },
     {
       "Name": "Ethical Investors",
-      "Characteristics": "People who want to invest in or purchase from businesses with a strong ethical and sustainable framework."
+      "Characteristics": "Investors interested in supporting businesses that align with their values of sustainability and ethical practices."
     },
     {
-      "Name": "Dietary Specific Shoppers",
-      "Characteristics": "Consumers with dietary restrictions or preferences who trust organic produce for its natural, unaltered qualities."
+      "Name": "Community Leaders",
+      "Characteristics": "People who are active in their communities and can influence others to support regenerative practices."
     },
     {
-      "Name": "Zero-Waste Lifestyle Adopters",
-      "Characteristics": "Individuals committed to reducing waste in their daily lives by choosing stores with zero-waste policies."
+      "Name": "Environmentally Responsible Corporates",
+      "Characteristics": "Businesses seeking to provide healthier, eco-friendly food options in their cafeterias and events."
     },
     {
-      "Name": "Environmental Educators",
-      "Characteristics": "Teachers and mentors looking to incorporate sustainable, healthy food sources in their educational programs."
+      "Name": "Diet Specialized Consumers",
+      "Characteristics": "Individuals with specific dietary restrictions who seek out organic and pure food sources."
     },
     {
-      "Name": "Community Organizers",
-      "Characteristics": "Local leaders aiming to partner with businesses that actively contribute to environmental and social causes."
+      "Name": "Educational Institutions",
+      "Characteristics": "Schools and universities aiming to offer sustainable and healthy food options in their canteens."
     },
     {
-      "Name": "Fitness Enthusiasts",
-      "Characteristics": "Individuals who are dedicated to a holistic approach to health, including the consumption of high-quality, organic foods."
+      "Name": "Fitness and Wellness Enthusiasts",
+      "Characteristics": "People deeply invested in personal health, who prefer organic food as part of a holistic approach to wellness."
+    },
+    {
+      "Name": "Green Activists",
+      "Characteristics": "Individuals actively involved in environmental advocacy who support transparent and sustainable business practices."
+    },
+    {
+      "Name": "Urban Gardeners and Farmers",
+      "Characteristics": "Those who practice urban agriculture and are interested in connecting with local organic farmers for produce and knowledge sharing."
     }
   ]
 }

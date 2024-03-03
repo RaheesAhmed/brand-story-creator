@@ -6,6 +6,7 @@ import fs from "fs";
 import { promises as fsPromises } from "fs";
 import OpenAI from "openai";
 import dotenv from "dotenv";
+
 // Load environment variables from .env file
 dotenv.config();
 
@@ -22,6 +23,9 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Multer for file upload
 const upload = multer({ dest: "uploads/" });
+
+// Temporary storage for brand story part 1 data
+const brandStoryPart1Data = {};
 
 // Async function to create or get existing assistant
 async function getOrCreateAssistant() {
@@ -66,37 +70,6 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
-// POST endpoint for file upload
-app.post("/upload", upload.single("file"), async (req, res) => {
-  try {
-    const assistantDetails = await getOrCreateAssistant();
-    const file = await openai.files.create({
-      file: fs.createReadStream(req.file.path),
-      purpose: "assistants",
-    });
-
-    // Retrieve existing file IDs from assistant.json to not overwrite
-    let existingFileIds = assistantDetails.file_ids || [];
-
-    // Update the assistant with the new file ID
-    await openai.beta.assistants.update(assistantDetails.assistantId, {
-      file_ids: [...existingFileIds, file.id],
-    });
-
-    // Update local assistantDetails and save to assistant.json
-    assistantDetails.file_ids = [...existingFileIds, file.id];
-    await fsPromises.writeFile(
-      "./assistant.json",
-      JSON.stringify(assistantDetails, null, 2)
-    );
-
-    res.send("File uploaded and successfully added to assistant");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("An error occurred during file upload");
-  }
-});
-
 // Endpoint to generate a brand story
 app.post("/generate-story", async (req, res) => {
   try {
@@ -112,8 +85,10 @@ app.post("/generate-story", async (req, res) => {
     } = req.body;
     const assistantDetails = await getOrCreateAssistant();
 
+    // Retrieve the data from brandStoryPart1Data
+    const part1Data = brandStoryPart1Data.tempKey;
     const prompt =
-      `Using the 'hero, villain, passion' storytelling framework, create a brand story for the selected target audience.\n\n` +
+      `Using the 'hero, villain, passion' from ${part1Data} storytelling framework, create a brand story for the selected target audience.\n\n` +
       `Target Audience: ${targetAudience}\n` +
       `Hero: The specific group of people targeted, aiming to build a connection with.\n` +
       `Villain: The main obstacle or challenge faced by the hero, preventing them from achieving their goals.\n` +
@@ -176,24 +151,8 @@ app.post("/generate-story", async (req, res) => {
   }
 });
 
-// Endpoint to get 10 potential target audiences
-app.get("/target-audiences", async (req, res) => {
-  try {
-    const targetAudiences = await generateRealisticTargetAudiences();
-
-    targetAudiences = targetAudiences.targetAudience;
-
-    res.json({ targetAudiences });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send("An error occurred while generating target audiences.");
-  }
-});
-
 // Endpoint to handle form submission and generate target audiences
-app.post("/submit-business-form", async (req, res) => {
+app.post("/target-audience", async (req, res) => {
   try {
     const businessDetails = req.body;
     console.log("Received Business Details: ", businessDetails);
@@ -211,7 +170,7 @@ app.post("/submit-business-form", async (req, res) => {
   }
 });
 
-//eendpoint to handle the selected target audience and generate the hero,villan and passion story
+//endpoint to handle the selected target audience and generate the hero,villan and passion story
 app.post("/brand-story-part1", async (req, res) => {
   try {
     const {
@@ -235,6 +194,8 @@ app.post("/brand-story-part1", async (req, res) => {
       regenerationFocus,
       pricingStrategy
     );
+    // Store the data in brandStoryPart1Data
+    brandStoryPart1Data.tempKey = heroVillanPassionStory;
 
     res.json(heroVillanPassionStory);
   } catch (error) {
@@ -327,7 +288,7 @@ const generateTargetAudiences = async (businessDetails) => {
       },
     ],
     model: "gpt-4-1106-preview",
-    max_tokens: 5000,
+    max_tokens: 4000,
   });
   console.log("OPENAI RESPONSE: ", completion);
   let targetAudiencesString = completion.choices[0].message.content;
@@ -344,14 +305,6 @@ const saveAndReadResponse = async (response) => {
   const data = await fsPromises.readFile("./response.json", "utf8");
   const targetAudiences = JSON.parse(data); // Parse the saved response
   return targetAudiences;
-};
-
-//replace the old response with new response
-const replaceResponse = async (response) => {
-  await fsPromises.writeFile(
-    "./response.json",
-    JSON.stringify(response, null, 2)
-  );
 };
 
 // Start the server

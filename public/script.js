@@ -1,5 +1,6 @@
 $(document).ready(function () {
   let infoText = document.getElementById("info-text");
+  let storedBusinessDetails = {};
 
   // Function to handle form submission and retrieve target audiences
   function submitBusinessForm() {
@@ -18,7 +19,7 @@ $(document).ready(function () {
 
     $.ajax({
       type: "POST",
-      url: "http://localhost:3000/submit-business-form",
+      url: "http://localhost:3000/target-audience",
       contentType: "application/json",
       data: JSON.stringify(formData),
       success: function (response) {
@@ -121,6 +122,7 @@ $(document).ready(function () {
   });
 
   function generateBrandStory(businessDetails) {
+    storedBusinessDetails = businessDetails;
     $("#brandStory").show();
     infoText.innerText = "GENERATING BRAND STORY please wait...";
     showLoading(true);
@@ -135,8 +137,8 @@ $(document).ready(function () {
           `<p style="padding:1rem"><span style="font-weight:800; color: #2c2b2c;
           font-size: 2rem;">Brand Story</span></br> ${response.brandStory}</p>
           <div class="icons-container">
-          <i class="fa-solid fa-copy" id="copyBtn" style="font-size: 30px; color:#2c2b2c"></i>
-          <i class="fa-solid fa-arrows-rotate" id="re-generate" style="font-size: 30px; color:#2c2b2c" ></i>
+          <i class="fa-solid fa-copy" id="copyBtn" style="font-size: 20px; color: #615c61;cursor: pointer;"></i>
+          <i class="fa-solid fa-arrows-rotate" id="re-generate" style="font-size: 20px; color: #615c61; cursor: pointer;" ></i>
           </div>
           </br>`
         );
@@ -152,15 +154,9 @@ $(document).ready(function () {
     });
   }
 
-  $("#copyBtn").click(function () {
-    navigator.clipboard
-      .writeText(response.brandStory)
-      .then(() => {
-        alert("Brand story copied to clipboard!");
-      })
-      .catch((err) => {
-        console.error("Error copying brand story to clipboard: ", err);
-      });
+  //on re-generate icon click simply call the  /generate-story
+  $(document).on("click", "#re-generate", function () {
+    generateBrandStory(storedBusinessDetails);
   });
 
   function displayBrandStoryPart1(response, businessDetails) {
@@ -214,6 +210,25 @@ $(document).ready(function () {
       selectedTargetAudience: $("#targetAudience").val(),
     };
     generateBrandStory(businessDetails);
+  });
+
+  // Copy the brand story to the clipboard
+  $(document).on("click", "#copyBtn", function () {
+    // Get the brand story text
+    const brandStoryText = $("#brandStory").text().trim();
+
+    // Copy the text to the clipboard
+    navigator.clipboard
+      .writeText(brandStoryText)
+      .then(() => {
+        // Success message
+        alert("Brand story copied to clipboard!");
+      })
+      .catch((error) => {
+        // Error message
+        console.error("Error copying text to clipboard: ", error);
+        alert("Failed to copy brand story.");
+      });
   });
 
   // Show or hide loading indicator
