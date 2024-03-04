@@ -1,6 +1,5 @@
 $(document).ready(function () {
   let infoText = document.getElementById("info-text");
-  var spinner = document.getElementsByClassName("spinner-border");
   let storedBusinessDetails = {};
 
   // Function to handle form submission and retrieve target audiences
@@ -22,7 +21,8 @@ $(document).ready(function () {
     infoText.innerText = "GENERATING AUDIENCES please wait...";
     showbtnSpinner(true);
     showLoading(true);
-
+    $("#brandStory").hide();
+    $("#brandStoryPart1").hide();
     $.ajax({
       type: "POST",
       url: "http://localhost:3000/target-audience",
@@ -32,8 +32,10 @@ $(document).ready(function () {
         console.log("Response:", response);
         var targetAudiences = response;
         displayTargetAudiences(targetAudiences);
+        // Show the target audiences section
 
         targetAudienceBtn.innerText = "Re-generate Target Audiences";
+
         showbtnSpinner(false);
         showLoading(false);
       },
@@ -91,6 +93,7 @@ $(document).ready(function () {
   }
 
   // Display target audiences
+
   function displayTargetAudiences(response) {
     console.log("Response in Target :", response);
     var targetAudiences = response.targetAudiences.TargetAudiences;
@@ -98,27 +101,27 @@ $(document).ready(function () {
       '<h2 class="card-title" style="text-align:left;padding 10px; color:#2c2b2c">Target Audiences</h2><div class="row">';
     targetAudiences.forEach(function (audience) {
       targetAudiencesHtml += `
-      <div class="col-md-4">
-        <div class="card mb-4 card-custom fixed">
-          <div class="card-body">
-            <h5 class="card-title">${audience.Name}</h5>
-            <p class="card-text">${audience.Characteristics}</p>
-            <button class="btn select-audience-btn" data-audience="${audience.Characteristics}">Select</button>
-          </div>
+    <div class="col-md-4">
+      <div class="card mb-4 card-custom fixed">
+        <div class="card-body">
+          <h5 class="card-title">${audience.Title}</h5>
+          <p class="card-text">${audience.Description}</p>
+          <button class="btn select-audience-btn" data-audience="${audience.Description}">Select</button>
         </div>
       </div>
-    `;
+    </div>
+  `;
     });
     targetAudiencesHtml += "</div>";
 
     // Display the Bootstrap cards in the targetAudiences div
+
     $("#targetAudiences").html(targetAudiencesHtml);
     $("#createStoryBtn").show();
-
     showLoading(false);
   }
 
-  // Alert display function
+  // Alert display function copyAlert
   function showAlert(message) {
     var alertBox = document.getElementById("customAlert");
     alertBox.innerText = message;
@@ -183,7 +186,7 @@ $(document).ready(function () {
     const target_audience = businessDetails.targetAudience;
 
     // Check if the response contains the 'response' property
-    if (response && response.response) {
+    if (response) {
       // Parse the JSON response
       const brandStoryPart1 = response.response;
 
@@ -251,7 +254,7 @@ $(document).ready(function () {
       .writeText(brandStoryText)
       .then(() => {
         // Success message
-        $("#copyBtn").html("Copied!");
+        alert("Brand story copied to clipboard!");
       })
       .catch((error) => {
         // Error message

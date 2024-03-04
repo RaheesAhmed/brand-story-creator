@@ -151,13 +151,14 @@ app.post("/generate-story", async (req, res) => {
   }
 });
 
-// Endpoint to generate target audiencess
+// Endpoint to generate target audiences
 app.post("/target-audience", async (req, res) => {
   try {
     const businessDetails = req.body;
     console.log("Received Business Details: ", businessDetails);
 
     const targetAudiences = await generateTargetAudiences(businessDetails);
+    console.log("Generating target audiences...");
     try {
       var savetargetesponse = await saveAndReadTargetAduience(targetAudiences);
     } catch (error) {
@@ -222,52 +223,39 @@ app.post("/brand-story-part1", async (req, res) => {
 });
 
 const generateTargetAudiences = async (businessDetails) => {
-  console.log("Generating target audiences for business details...");
   const assistantDetails = await getOrCreateAssistant();
+  console.log("Generating target audiences...");
   const prompt =
-    `Please list 12 different target audiences suited for my new emerging dream business. The description of my dream business is as follows::\n` +
+    `Please list 12 different target audiences suited for my new emerging dream business. The description of my dream business is as follows:\n` +
     `Business Name: ${businessDetails.businessName}\n` +
     `Nature of Business: ${businessDetails.natureOfBusiness}\n` +
     `Unique Selling Proposition: ${businessDetails.uniqueSellingProposition}\n` +
     `Positive Impact: ${businessDetails.positiveImpact}\n` +
     `Core Business Values: ${businessDetails.coreValues}\n` +
     `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
-    `Pricing Strategy: ${businessDetails.pricingStrategy} \n` +
-    `Based on this information, I need a clean array of objects detailing target audiences use this format {"TargetAudiences": [
-      {
-          "Name": "Eco-Conscious Consumers",
-          "Characteristics": "Individuals who prioritize sustainability and are willing to pay more for organic, eco-friendly products."
-        },
-        ...
-]
-}
-      .Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response also just give the response object.
-`;
-
-  // Create a thread using the assistantId
+    `Pricing Strategy: ${businessDetails.pricingStrategy}\n` +
+    `Based on this information, I need a clean array of objects detailing target audiences in this format: {"TargetAudiences": [{Title:'add title here',Description:'add Description heere'}...]}. Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response.`;
+  console.log("prompt loaded ....");
   const thread = await openai.beta.threads.create();
-
-  // Pass the prompt into the existing thread
   await openai.beta.threads.messages.create(thread.id, {
     role: "user",
     content: prompt,
   });
-
-  // Create a run using the assistantId
+  console.log("message sent ....");
   const run = await openai.beta.threads.runs.create(thread.id, {
     assistant_id: assistantDetails.assistantId,
   });
-
-  // Fetch run-status
+  console.log("run created ....");
   let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-
-  // Polling mechanism to check if runStatus is completed
+  console.log("run status retrieved ....");
   while (runStatus.status !== "completed") {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log("run not completed ....");
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // Increase timeout if necessary
+    console.log("waiting for run to complete ....");
     runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    console.log("run status retrieved ....");
   }
-
-  // Get the last assistant message from the messages array
+  console.log("run completed ....");
   const messages = await openai.beta.threads.messages.list(thread.id);
   const lastMessageForRun = messages.data
     .filter(
@@ -276,22 +264,12 @@ const generateTargetAudiences = async (businessDetails) => {
     .pop();
 
   if (lastMessageForRun) {
-    console.log(
-      "Raw Response from OpenAI:",
-      lastMessageForRun.content[0].text.value
-    );
-
-    // Clean up the response by removing the triple backticks and "json" string
     const cleanedResponse = lastMessageForRun.content[0].text.value.replace(
       /```json\n|\n```/g,
       ""
     );
-
-    console.log("Cleaned Response:", cleanedResponse);
-
-    // Parse the cleaned response
     const targetAudiences = JSON.parse(cleanedResponse);
-    console.log("Parsed Target Audiences:", targetAudiences);
+    console.log("Target Audiences Generated ");
     return targetAudiences;
   } else {
     throw new Error("No response received from the assistant.");
@@ -368,18 +346,43 @@ const heroVillanPassion = async (
   }
 };
 const saveBrandStoryPart1 = async (response) => {
-  await fsPromises.writeFile(
-    "./BrandStoryPart1.json",
-    JSON.stringify(response)
-  ); // Convert object to JSON string
-  const data = await fsPromises.readFile("./BrandStoryPart1.json", "utf8");
-  const parsedData = JSON.parse(data); // Parse the saved response
-  return parsedData;
+  // Convert object to JSON string
+  // const data = response;
+  // const parsedData = JSON.parse(data); // Parse the saved response
+  // return parsedData;
+
+  try {
+    console.log("saving brand story part 1 ");
+    try {
+      console.log("Removing Unwanted format...");
+      // Remove backticks '`' and ```json ``` markers from the response
+      const cleanedResponse = JSON.stringify(response).replace(
+        /`|```[object Obj]|```/g,
+        ""
+      );
+
+      var cresponse = cleanedResponse;
+      console.log("File Saved"); // Convert object to JSON string
+    } catch (error) {
+      console.error("Error in saving brand story part 1: ", error);
+    }
+
+    try {
+      var data = cresponse;
+    } catch (error) {
+      console.error("Error in saving brand story part 1: ", error);
+    }
+    const brandStoryPart1 = JSON.parse(data); // Parse the saved response
+    console.log("brand story part 1 saved ");
+    return brandStoryPart1;
+  } catch (error) {
+    console.error("Error in saving brand story part 1: ", error);
+  }
 };
 
 const saveAndReadTargetAduience = async (response) => {
   try {
-    console.log("saving targetAudience into json file");
+    console.log("saving targetAudience ");
     try {
       console.log("Removing Unwanted format...");
       // Remove backticks '`' and ```json ``` markers from the response
@@ -388,19 +391,19 @@ const saveAndReadTargetAduience = async (response) => {
         ""
       );
 
-      await fsPromises.writeFile("./targetAudience.json", cleanedResponse);
+      var cresponse = cleanedResponse;
       console.log("File Saved"); // Convert object to JSON string
     } catch (error) {
       console.error("Error in saving target audiences: ", error);
     }
 
     try {
-      var data = await fsPromises.readFile("./targetAudience.json", "utf8");
+      var data = cresponse;
     } catch (error) {
       console.error("Error in saving target audiences: ", error);
     }
     const targetAudiences = JSON.parse(data); // Parse the saved response
-    console.log("targetAudience saved into json file");
+    console.log("targetAudience saved ");
     return targetAudiences;
   } catch (error) {
     console.error("Error in saving target audiences: ", error);
