@@ -6,7 +6,9 @@ import fs from "fs";
 import { promises as fsPromises } from "fs";
 import OpenAI from "openai";
 import dotenv from "dotenv";
-
+import { google } from "googleapis";
+import path from "path";
+import { fileURLToPath } from "url";
 // Load environment variables from .env file
 dotenv.config();
 
@@ -72,6 +74,7 @@ app.get("/", (req, res) => {
 
 // Endpoint to generate a brand story
 app.post("/generate-story", async (req, res) => {
+  console.log("Data Recieved:", req.body);
   try {
     const {
       businessName,
@@ -82,6 +85,7 @@ app.post("/generate-story", async (req, res) => {
       coreValues,
       regenerationFocus,
       pricingStrategy,
+      fullName,
     } = req.body;
     const assistantDetails = await getOrCreateAssistant();
 
@@ -135,9 +139,14 @@ app.post("/generate-story", async (req, res) => {
       .pop();
 
     if (lastMessageForRun) {
-      res.json({ brandStory: lastMessageForRun.content[0].text.value });
+      const brandStory = lastMessageForRun.content[0].text.value;
+      res.json({ brandStory: brandStory });
 
-      heroVillanPassion(lastMessageForRun.content[0].text.value);
+      heroVillanPassion(brandStory);
+      // Call savetocsv with the appropriate data
+      await savetocsv(fullName, targetAudience, brandStory);
+
+      await handleCSVOnGoogleDrive(csvFilePath);
     } else {
       res.status(500).send("No response received from the assistant.");
     }
@@ -169,6 +178,9 @@ app.post("/target-audience", async (req, res) => {
     res.json({ targetAudiences: savetargetesponse });
   } catch (error) {
     console.error("Error in generating target audiences: ", error);
+    res
+      .status(500)
+      .send("<p>Invalid response from OpenAI Please Try Again</p>");
 
     if (!res.headersSent) {
       res.status(500).send("An error occurred while generating  brand story.");
@@ -188,8 +200,9 @@ app.post("/brand-story-part1", async (req, res) => {
       regenerationFocus,
       pricingStrategy,
       selectedTargetAudience,
+      fullName,
     } = req.body;
-
+    console.log("Part1 Data:", req.body);
     const heroVillanPassionStory = await heroVillanPassion(
       selectedTargetAudience,
       businessName,
@@ -212,6 +225,7 @@ app.post("/brand-story-part1", async (req, res) => {
     res.json({ response: savedheroVillanPassionStory });
   } catch (error) {
     console.error("Error in generating hero,villan and passion story: ", error);
+    res.send("<p>Invalid response from OpenAI Please Try Again</p>");
     if (!res.headersSent) {
       res
         .status(500)
@@ -222,7 +236,86 @@ app.post("/brand-story-part1", async (req, res) => {
   }
 });
 
+// Load the service account key JSON file
+const serviceAccount = JSON.parse(
+  fs.readFileSync("future4u-412121-9c3a9372690b.json")
+);
+const jwtClient = new google.auth.JWT(
+  serviceAccount.client_email,
+  null,
+  serviceAccount.private_key,
+  ["https://www.googleapis.com/auth/drive"]
+);
+
+// Initialize the Google Drive API client
+const drive = google.drive({ version: "v3", auth: jwtClient });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const csvFilePath = path.join(__dirname, "BrandStory-Data.csv");
+
+const handleCSVOnGoogleDrive = async (csvFilePath) => {
+  const fileName = "BrandStory-Data.csv";
+  const folderId = process.env.GOOGLE_FOLDER_ID;
+  console.log("Uploading CSV to Google Drive. Folder ID:", folderId);
+
+  try {
+    const fileMetadata = {
+      name: fileName,
+      parents: [folderId],
+    };
+
+    const media = {
+      mimeType: "text/csv",
+      body: fs.createReadStream(csvFilePath),
+    };
+
+    // Check if the file already exists
+    const existingFiles = await drive.files.list({
+      q: `name='${fileName}' and '${folderId}' in parents and trashed=false`,
+      spaces: "drive",
+      fields: "files(id, name)",
+    });
+
+    if (existingFiles.data.files.length > 0) {
+      // File exists, update it
+      const fileId = existingFiles.data.files[0].id;
+      await drive.files.update({
+        fileId: fileId,
+        media: media,
+      });
+      console.log(`Updated existing file on Google Drive with ID: ${fileId}`);
+    } else {
+      // File doesn't exist, upload as new
+      await drive.files.create({
+        resource: fileMetadata,
+        media: media,
+      });
+      console.log("Uploaded new file to Google Drive.");
+    }
+  } catch (error) {
+    console.error("Error uploading CSV to Google Drive:", error);
+  }
+};
+
+const savetocsv = async (fullName, targetAudience, brandStory) => {
+  const headers = "First Name,Target Audience,Brand Story,\n";
+  const data = `${fullName},${targetAudience},"${brandStory}",\n`;
+
+  try {
+    await fs.promises.access(csvFilePath, fs.constants.F_OK);
+    console.log("CSV file exists. Appending data.");
+    await fs.promises.appendFile(csvFilePath, data);
+    console.log("Data appended to CSV file successfully.");
+  } catch (error) {
+    console.log("CSV file does not exist. Creating file.", error);
+    await fs.promises.writeFile(csvFilePath, headers + data);
+    console.log("CSV file created with headers and data.");
+  }
+};
+
 const generateTargetAudiences = async (businessDetails) => {
+  console.log("Generating target audiences...", businessDetails);
   const assistantDetails = await getOrCreateAssistant();
   console.log("Generating target audiences...");
   const prompt =
@@ -264,10 +357,9 @@ const generateTargetAudiences = async (businessDetails) => {
     .pop();
 
   if (lastMessageForRun) {
-    const cleanedResponse = lastMessageForRun.content[0].text.value.replace(
-      /```json\n|\n```/g,
-      ""
-    );
+    const cleanedResponse = lastMessageForRun.content[0].text.value
+      .replace(/```json\n|\n```/g, "")
+      .replace(/'}\n|\n'/g, "");
     const targetAudiences = JSON.parse(cleanedResponse);
     console.log("Target Audiences Generated ");
     return targetAudiences;
@@ -340,6 +432,7 @@ const heroVillanPassion = async (
     );
     console.log("Hero, Villain, Passion:", response);
     const savedResponse = await saveBrandStoryPart1(response);
+
     return savedResponse;
   } else {
     throw new Error("No response received from the assistant.");
@@ -386,10 +479,10 @@ const saveAndReadTargetAduience = async (response) => {
     try {
       console.log("Removing Unwanted format...");
       // Remove backticks '`' and ```json ``` markers from the response
-      const cleanedResponse = JSON.stringify(response).replace(
-        /`|```json|```/g,
-        ""
-      );
+      const cleanedResponse = JSON.stringify(response)
+        .replace(/`|```json|```/g, "")
+        .replace(/'}\n|\n'/g, "")
+        .replace(/\\n/g, "");
 
       var cresponse = cleanedResponse;
       console.log("File Saved"); // Convert object to JSON string

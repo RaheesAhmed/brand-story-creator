@@ -17,7 +17,9 @@ $(document).ready(function () {
       coreValues: $("#coreValues").val(),
       regenerationFocus: $("#regenerationFocus").val(),
       pricingStrategy: $("#pricingStrategy").val(),
+      fullName: $("#fullName").val(),
     };
+    console.log("Form Data:", formData);
     infoText.innerText = "GENERATING AUDIENCES please wait...";
     showbtnSpinner(true);
     showLoading(true);
@@ -56,6 +58,7 @@ $(document).ready(function () {
   // Handler for "Create Brand Story" button
   $("#createStoryBtn").click(function () {
     var businessDetails = {
+      fullName: $("#fullName").val(),
       businessName: $("#businessName").val(),
       natureOfBusiness: $("#natureOfBusiness").val(),
       uniqueSellingProposition: $("#uniqueSellingProposition").val(),
@@ -66,11 +69,16 @@ $(document).ready(function () {
       pricingStrategy: $("#pricingStrategy").val(),
       selectedTargetAudience: $("#targetAudience").val(),
     };
+    console.log("Business Details:", businessDetails);
+    $("#brandStory").show();
+    $("#brandStoryPart1").show();
     getBrandStoryPart1(businessDetails);
   });
   //make api call to get the Brnad story Part1
   function getBrandStoryPart1(businessDetails) {
     $("#brandStory").show();
+    $("#brandStoryPart1").show();
+    console.log("Business Details:", businessDetails);
     infoText.innerText = "GENERATING BRAND STORY PART-1 please wait...";
     showLoading(true);
     $.ajax({
@@ -81,6 +89,8 @@ $(document).ready(function () {
       success: function (response) {
         console.log("Response:", response);
         displayBrandStoryPart1(response, businessDetails);
+        $("#brandStory").show();
+        $("#brandStoryPart1").show();
         showLoading(false);
       },
       error: function (error) {
@@ -96,29 +106,35 @@ $(document).ready(function () {
 
   function displayTargetAudiences(response) {
     console.log("Response in Target :", response);
-    var targetAudiences = response.targetAudiences.TargetAudiences;
-    var targetAudiencesHtml =
-      '<h2 class="card-title" style="text-align:left;padding 10px; color:#2c2b2c">Target Audiences</h2><div class="row">';
-    targetAudiences.forEach(function (audience) {
-      targetAudiencesHtml += `
-    <div class="col-md-4">
-      <div class="card mb-4 card-custom fixed">
-        <div class="card-body">
-          <h5 class="card-title">${audience.Title}</h5>
-          <p class="card-text">${audience.Description}</p>
-          <button class="btn select-audience-btn" data-audience="${audience.Description}">Select</button>
+    try {
+      var targetAudiences = response.targetAudiences.TargetAudiences;
+      var targetAudiencesHtml =
+        '<h2 class="card-title" style="text-align:left;padding 10px; color:#2c2b2c">Target Audiences</h2><div class="row">';
+      targetAudiences.forEach(function (audience) {
+        targetAudiencesHtml += `
+      <div class="col-md-4">
+        <div class="card mb-4 card-custom fixed">
+          <div class="card-body">
+            <h5 class="card-title">${audience.Title}</h5>
+            <p class="card-text">${audience.Description}</p>
+            <button class="btn select-audience-btn" data-audience="${audience.Description}">Select</button>
+          </div>
         </div>
       </div>
-    </div>
-  `;
-    });
-    targetAudiencesHtml += "</div>";
+    `;
+      });
+      targetAudiencesHtml += "</div>";
 
-    // Display the Bootstrap cards in the targetAudiences div
+      // Display the Bootstrap cards in the targetAudiences div
 
-    $("#targetAudiences").html(targetAudiencesHtml);
-    $("#createStoryBtn").show();
-    showLoading(false);
+      $("#targetAudiences").html(targetAudiencesHtml);
+      $("#createStoryBtn").show();
+      showLoading(false);
+    } catch (e) {
+      $("#targetAudiences").html(
+        "<p>Invalid Response from OpenAI Please Try Again.</p>"
+      );
+    }
   }
 
   // Alert display function copyAlert
@@ -147,6 +163,7 @@ $(document).ready(function () {
   function generateBrandStory(businessDetails) {
     storedBusinessDetails = businessDetails;
     $("#brandStory").show();
+    $("#brandStoryPart1").show();
     infoText.innerText = "GENERATING BRAND STORY please wait...";
     showLoading(true);
 
@@ -154,17 +171,36 @@ $(document).ready(function () {
       type: "POST",
       url: "http://localhost:3000/generate-story",
       contentType: "application/json",
-      data: JSON.stringify(businessDetails),
+      data: JSON.stringify(storedBusinessDetails),
+
       success: function (response) {
         $("#brandStory").html(
           `<p style="padding:1rem"><span style="font-weight:800; color: #2c2b2c;
-          font-size: 2rem;">Brand Story</span></br> ${response.brandStory}</p>
+          font-size: 25px">Part 2: Brand Story</span></br> ${response.brandStory}</p>
           <div class="icons-container">
+          <button
+            type="button"
+            id="re-generate"
+            class="btn btn-custom text-center align-center py-2 bg-[#b3226aFF]"
+            
+            style="
+              background-color: rgb(15, 15, 15);
+              color: white;
+              font-weight: 600;
+             
+            "
+          >
+            RE-GENERATE BRAND STORY
+          </button>
           <i class="fa-solid fa-copy" id="copyBtn" style="font-size: 20px; color: #615c61;cursor: pointer;"></i>
-          <i class="fa-solid fa-arrows-rotate" id="re-generate" style="font-size: 20px; color: #615c61; cursor: pointer;" ></i>
           </div>
+          
+          
+          
           </br>`
         );
+        $("#brandStory").show();
+        $("#brandStoryPart1").show();
         showLoading(false);
       },
       error: function (error) {
@@ -207,6 +243,7 @@ $(document).ready(function () {
             type="button"
             id="createStoryBtnPart2"
             class="btn btn-custom mt-4 text-center align-center py-2 bg-[#b3226aFF]"
+            id="createStoryBtnPart2"
             style="
               background-color: rgb(15, 15, 15);
               color: white;
@@ -240,6 +277,7 @@ $(document).ready(function () {
       regenerationFocus: $("#regenerationFocus").val(),
       pricingStrategy: $("#pricingStrategy").val(),
       selectedTargetAudience: $("#targetAudience").val(),
+      fullName: $("#fullName").val(),
     };
     generateBrandStory(businessDetails);
   });
