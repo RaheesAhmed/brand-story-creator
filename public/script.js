@@ -43,9 +43,7 @@ $(document).ready(function () {
       },
       error: function (error) {
         console.error("Error in form submission: ", error);
-        $("#brandStory").html(
-          "<p>An error occurred while processing your request.</p>"
-        );
+        $("#brandStory").html("<p>Invalid Response from openAI. Try Again</p>");
         showLoading(false);
         showbtnSpinner(false);
       },
@@ -96,7 +94,7 @@ $(document).ready(function () {
       error: function (error) {
         console.error("Error:", error);
         $("#brandStoryPart1").html(
-          "<p>An error occurred while fetching the brand story part 1.</p>"
+          "<p>Invalid Response from openAI. Try Again</p>"
         );
       },
     });
@@ -205,9 +203,7 @@ $(document).ready(function () {
       },
       error: function (error) {
         console.error("Error:", error);
-        $("#brandStory").html(
-          "<p>An error occurred while generating the brand story.</p>"
-        );
+        $("#brandStory").html("<p>Invalid Response from openAI. Try Again</p>");
         showLoading(false);
       },
     });
@@ -258,7 +254,7 @@ $(document).ready(function () {
     } else {
       console.error("No response data received for brand story part 1.");
       $("#brandStoryPart1").html(
-        "<p>An error occurred while fetching the brand story part 1.</p>"
+        "<p>Invalid Response from openAI. Try Again</p>"
       );
     }
 
