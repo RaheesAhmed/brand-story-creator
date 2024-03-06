@@ -1,7 +1,6 @@
 /node_modules
 .env
 project-keypoints.txt
-assistant.json
 test.html
 assistant.json
 new.js
@@ -11,3 +10,4 @@ targetAudience.json
 BrandStoryPart1.json
 future4u-412121-9c3a9372690b.json
 BrandStory-Data.csv
+google-authencation.json

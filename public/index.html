@@ -93,14 +93,22 @@
             <label for="pricingStrategy"><i class="fa fa-tag must"></i>Pricing Strategy:</label>
             <input type="text" class="form-control" id="pricingStrategy" name="pricingStrategy" placeholder="Are you considering a budget-friendly or premium approach?" required />
           </div>
-          <div class="form-group">
-            <label for="fullName"><i class="fa fa-user must"></i>Full Name:</label>
-            <input type="text" class="form-control" type="text" id="fullName" name="fullName" placeholder="Enter your full name" required />
+          <div class="info-container">
+            <!-- Name -->
+            <div class="form-group">
+              <label for="fullName"><i class="fa fa-user must"></i>Full Name:</label>
+              <input type="text" class="form-control" type="text" id="fullName" name="fullName" placeholder="Enter your full name" required />
+            </div>
+            <!-- Email -->
+            <div class="form-group">
+              <label for="email"><i class="fa-solid fa-envelope must"></i>Email:</label>
+              <input type="email" class="form-control" type="text" id="email" name="email" placeholder="Enter your email" required />
+            </div>
           </div>
           <div class="btn-container">
             <span>
               <button type="button" id="submitBtn" class="btn btn-custom mt-4 text-center align-center py-2 bg-[#b3226aFF]" style="color: white; font-weight: 600;">Generate Target Audiences</button>
-              <button type="button" id="createStoryBtn" class="btn btn-custom mt-4 text-center align-center py-2 bg-[#b3226aFF]" style="background-color: rgb(15, 15, 15); color: white; font-weight: 600;">CREATE BRAND STORY PART 1</button>
+              <button type="button" id="createStoryBtn" class="btn btn-custom mt-4 text-center align-center py-2 bg-[#b3226aFF]" style="background-color: rgb(15, 15, 15); color: white; font-weight: 600;display: none;">CREATE BRAND STORY PART 1</button>
             </span>
           </div>
           <div id="loadingIndicator" class="text-center my-3" style="display: none;">

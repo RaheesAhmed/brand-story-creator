@@ -86,6 +86,7 @@ app.post("/generate-story", async (req, res) => {
       regenerationFocus,
       pricingStrategy,
       fullName,
+      email,
     } = req.body;
     const assistantDetails = await getOrCreateAssistant();
 
@@ -144,7 +145,7 @@ app.post("/generate-story", async (req, res) => {
 
       heroVillanPassion(brandStory);
       // Call savetocsv with the appropriate data
-      await savetocsv(fullName, targetAudience, brandStory);
+      await savetocsv(fullName, email, targetAudience, brandStory);
 
       await handleCSVOnGoogleDrive(csvFilePath);
     } else {
@@ -237,9 +238,7 @@ app.post("/brand-story-part1", async (req, res) => {
 });
 
 // Load the service account key JSON file
-const serviceAccount = JSON.parse(
-  fs.readFileSync("future4u-412121-9c3a9372690b.json")
-);
+const serviceAccount = JSON.parse(fs.readFileSync("google-authencation.json"));
 const jwtClient = new google.auth.JWT(
   serviceAccount.client_email,
   null,
@@ -298,9 +297,9 @@ const handleCSVOnGoogleDrive = async (csvFilePath) => {
   }
 };
 
-const savetocsv = async (fullName, targetAudience, brandStory) => {
-  const headers = "First Name,Target Audience,Brand Story,\n";
-  const data = `${fullName},${targetAudience},"${brandStory}",\n`;
+const savetocsv = async (fullName, email, targetAudience, brandStory) => {
+  const headers = "First Name,Email,Target Audience,Brand Story,\n";
+  const data = `${fullName},${email},${targetAudience},"${brandStory}",\n`;
 
   try {
     await fs.promises.access(csvFilePath, fs.constants.F_OK);
@@ -357,9 +356,11 @@ const generateTargetAudiences = async (businessDetails) => {
     .pop();
 
   if (lastMessageForRun) {
-    const cleanedResponse = lastMessageForRun.content[0].text.value
-      .replace(/```json\n|\n```/g, "")
-      .replace(/'}\n|\n'/g, "");
+    const cleanedResponse = lastMessageForRun.content[0].text.value.replace(
+      /```json\n|\n```/g,
+      ""
+    );
+
     const targetAudiences = JSON.parse(cleanedResponse);
     console.log("Target Audiences Generated ");
     return targetAudiences;
@@ -481,7 +482,7 @@ const saveAndReadTargetAduience = async (response) => {
       // Remove backticks '`' and ```json ``` markers from the response
       const cleanedResponse = JSON.stringify(response)
         .replace(/`|```json|```/g, "")
-        .replace(/'}\n|\n'/g, "")
+
         .replace(/\\n/g, "");
 
       var cresponse = cleanedResponse;

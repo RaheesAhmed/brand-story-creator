@@ -18,6 +18,7 @@ $(document).ready(function () {
       regenerationFocus: $("#regenerationFocus").val(),
       pricingStrategy: $("#pricingStrategy").val(),
       fullName: $("#fullName").val(),
+      email: $("#email").val(),
     };
     console.log("Form Data:", formData);
     infoText.innerText = "GENERATING AUDIENCES please wait...";
@@ -57,6 +58,7 @@ $(document).ready(function () {
   $("#createStoryBtn").click(function () {
     var businessDetails = {
       fullName: $("#fullName").val(),
+      email: $("#email").val(),
       businessName: $("#businessName").val(),
       natureOfBusiness: $("#natureOfBusiness").val(),
       uniqueSellingProposition: $("#uniqueSellingProposition").val(),
@@ -150,11 +152,13 @@ $(document).ready(function () {
       alertBox.style.display = "none";
     }, 2000); // Hide after 3 seconds
   }
-
+  var selectedTargetAudienceTitle = "";
   // Select target audience and show alert
   $(document).on("click", ".select-audience-btn", function () {
-    var selectedAudience = $(this).data("audience");
-    $("#targetAudience").val(selectedAudience);
+    var selectedAudienceTitle = $(this).siblings(".card-title").text(); // Get the title of the selected audience
+    selectedTargetAudienceTitle = selectedAudienceTitle; // Store the title
+    var selectedAudienceDescription = $(this).data("audience"); // Get the description of the selected audience
+    $("#targetAudience").val(selectedAudienceDescription); // Store the description in the hidden input
     showAlert("Selected...!");
   });
 
@@ -215,7 +219,8 @@ $(document).ready(function () {
   });
 
   function displayBrandStoryPart1(response, businessDetails) {
-    const target_audience = businessDetails.targetAudience;
+    // Use the selectedTargetAudienceTitle for displaying the target audience
+    const target_audience = selectedTargetAudienceTitle;
 
     // Check if the response contains the 'response' property
     if (response) {
@@ -274,6 +279,7 @@ $(document).ready(function () {
       pricingStrategy: $("#pricingStrategy").val(),
       selectedTargetAudience: $("#targetAudience").val(),
       fullName: $("#fullName").val(),
+      email: $("#email").val(),
     };
     generateBrandStory(businessDetails);
   });
