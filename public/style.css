@@ -2,7 +2,7 @@
 *{
   font-family: "Poppins", sans-serif;
 }
-  
+
 
 h2 {
   color: #2c2b2c;
@@ -100,7 +100,7 @@ h2.mb-4 {
 form {
     background-color: #fff;
     padding: 60px;
-    
+
     margin: auto;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -262,9 +262,9 @@ body {
 
 .form-container {
 
-  
+
   border-radius: 10px;
- 
+
   padding: 30px;
 }
 
@@ -285,7 +285,7 @@ body {
 
 .form-group label {
   font-weight: 600;
-  
+
 }
 
 .form-group i {
@@ -357,9 +357,21 @@ body {
 }
 
 .info-container {
-  
+
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
-  
+
+}
+
+/* #selectedAudienceDesc{
+  background: #f355ff;
+    color: white;
+    padding: 5px;
+} */
+.description-text {
+  background: #ffdffc;
+  color: black;
+  padding: 5px;
+  margin-top: 20px;
 }

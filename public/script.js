@@ -1,12 +1,14 @@
 $(document).ready(function () {
   let infoText = document.getElementById("info-text");
   let storedBusinessDetails = {};
+  let selectedAudienceDesc = $("#selectedAudienceDesc");
+  let sta = $("#sta");
+  selectedAudienceDesc.hide();
+  sta.hide();
 
   // Function to handle form submission and retrieve target audiences
   function submitBusinessForm() {
     var targetAudienceBtn = document.getElementById("submitBtn");
-
-    targetAudienceBtn.innerText = "Generating Target Audiences...";
 
     var formData = {
       businessName: $("#businessName").val(),
@@ -20,12 +22,61 @@ $(document).ready(function () {
       fullName: $("#fullName").val(),
       email: $("#email").val(),
     };
-    console.log("Form Data:", formData);
-    infoText.innerText = "GENERATING AUDIENCES please wait...";
-    showbtnSpinner(true);
+    //if fullName and email is empty then show alert
+    if (formData.fullName === "" || formData.email === "") {
+      showAlert("Please Enter Full Name and Email");
+      return;
+    }
+    //if target audience is empty then show alert
+    if (formData.targetAudience === "") {
+      showAlert("Please Select Target Audience");
+      return;
+    }
+    //if target audience is empty then show alert
+    if (formData.businessName === "") {
+      showAlert("Please Enter Business Name");
+      return;
+    }
+    //if nature of business is empty then show alert
+    if (formData.natureOfBusiness === "") {
+      showAlert("Please Enter Nature of Business");
+      return;
+    }
+    //if unique selling proposition is empty then show alert
+    if (formData.uniqueSellingProposition === "") {
+      showAlert("Please Enter Unique Selling Proposition");
+      return;
+    }
+    //if positive impact is empty then show alert
+    if (formData.positiveImpact === "") {
+      showAlert("Please Enter Positive Impact");
+      return;
+    }
+    //if core values is empty then show alert
+    if (formData.coreValues === "") {
+      showAlert("Please Enter Core Values");
+      return;
+    }
+    //if regeneration focus is empty then show alert
+    if (formData.regenerationFocus === "") {
+      showAlert("Please Enter Regeneration Focus");
+      return;
+    }
+    //if pricing strategy is empty then show alert
+    if (formData.pricingStrategy === "") {
+      showAlert("Please Enter Pricing Strategy");
+      return;
+    }
+    //if email is invalid then show alert
+    if (!validateEmail(formData.email)) {
+      showAlert("Please Enter Valid Email");
+      return;
+    }
+
+    // Show loading indicator
     showLoading(true);
-    $("#brandStory").hide();
-    $("#brandStoryPart1").hide();
+    targetAudienceBtn.innerText = "Generating Target Audiences...";
+    // Make an AJAX request to the server to retrieve target audiences
     $.ajax({
       type: "POST",
       url: "http://localhost:3000/target-audience",
@@ -33,20 +84,15 @@ $(document).ready(function () {
       data: JSON.stringify(formData),
       success: function (response) {
         console.log("Response:", response);
-        var targetAudiences = response;
-        displayTargetAudiences(targetAudiences);
-        // Show the target audiences section
-
-        targetAudienceBtn.innerText = "Re-generate Target Audiences";
-
-        showbtnSpinner(false);
-        showLoading(false);
+        displayTargetAudiences(response);
+        targetAudienceBtn.innerText = "RE-Generate Target Audiences";
       },
       error: function (error) {
-        console.error("Error in form submission: ", error);
-        $("#brandStory").html("<p>Invalid Response from openAI. Try Again</p>");
+        console.error("Error:", error);
+        $("#targetAudiences").html(
+          "<p>Invalid Response from OpenAI Please Try Again.</p>"
+        );
         showLoading(false);
-        showbtnSpinner(false);
       },
     });
   }
@@ -67,7 +113,7 @@ $(document).ready(function () {
       coreValues: $("#coreValues").val(),
       regenerationFocus: $("#regenerationFocus").val(),
       pricingStrategy: $("#pricingStrategy").val(),
-      selectedTargetAudience: $("#targetAudience").val(),
+      selectedTargetAudience: selectedAudienceDesc,
     };
     console.log("Business Details:", businessDetails);
     $("#brandStory").show();
@@ -107,6 +153,8 @@ $(document).ready(function () {
   function displayTargetAudiences(response) {
     console.log("Response in Target :", response);
     try {
+      selectedAudienceDesc.show();
+
       var targetAudiences = response.targetAudiences.TargetAudiences;
       var targetAudiencesHtml =
         '<h2 class="card-title" style="text-align:left;padding 10px; color:#2c2b2c">Target Audiences</h2><div class="row">';
@@ -152,13 +200,12 @@ $(document).ready(function () {
       alertBox.style.display = "none";
     }, 2000); // Hide after 3 seconds
   }
-  var selectedTargetAudienceTitle = "";
+  var selectedAudienceDescription = "";
   // Select target audience and show alert
   $(document).on("click", ".select-audience-btn", function () {
-    var selectedAudienceTitle = $(this).siblings(".card-title").text(); // Get the title of the selected audience
-    selectedTargetAudienceTitle = selectedAudienceTitle; // Store the title
-    var selectedAudienceDescription = $(this).data("audience"); // Get the description of the selected audience
-    $("#targetAudience").val(selectedAudienceDescription); // Store the description in the hidden input
+    sta.show();
+    selectedAudienceDescription = $(this).data("audience");
+    $("#selectedAudienceDesc").text(selectedAudienceDescription);
     showAlert("Selected...!");
   });
 
@@ -180,25 +227,12 @@ $(document).ready(function () {
           `<p style="padding:1rem"><span style="font-weight:800; color: #2c2b2c;
           font-size: 25px">Part 2: Brand Story</span></br> ${response.brandStory}</p>
           <div class="icons-container">
-          <button
-            type="button"
-            id="re-generate"
-            class="btn btn-custom text-center align-center py-2 bg-[#b3226aFF]"
-            
-            style="
-              background-color: rgb(15, 15, 15);
-              color: white;
-              font-weight: 600;
-             
-            "
-          >
-            RE-GENERATE BRAND STORY
-          </button>
+          
           <i class="fa-solid fa-copy" id="copyBtn" style="font-size: 20px; color: #615c61;cursor: pointer;"></i>
           </div>
-          
-          
-          
+
+
+
           </br>`
         );
         $("#brandStory").show();
@@ -219,8 +253,9 @@ $(document).ready(function () {
   });
 
   function displayBrandStoryPart1(response, businessDetails) {
-    // Use the selectedTargetAudienceTitle for displaying the target audience
-    const target_audience = selectedTargetAudienceTitle;
+    // Use the selectedAudienceDescription for displaying the target audience
+    const target_audience = selectedAudienceDescription;
+    const target_audience_description = businessDetails.targetAudience;
 
     // Check if the response contains the 'response' property
     if (response) {
@@ -236,7 +271,9 @@ $(document).ready(function () {
       $("#brandStoryPart1").html(
         `<div style="padding:2rem; background: white;" class="card-custom">
           <h2 style="color: #2c2b2c; font-size: 25px;text-align:left;">Part 1: The Hero, Villain, and Passion of Your Brand Story</h2>
-          <p><span style="font-weight:800;">Target Audience:</span> ${target_audience}</p>
+          
+          <p><span style="font-weight:800;">Target Audience:</span> ${target_audience_description}</p>
+          <p><span style="font-weight:800;">Selected  Target Audience:</span> ${target_audience}</p>
           <p><span style="font-weight:800;">Hero:</span> ${hero}</p>
           <p><span style="font-weight:800;">Villain:</span> ${villain}</p>
           <p><span style="font-weight:800;">Passion:</span> ${passion}</p>
@@ -249,7 +286,7 @@ $(document).ready(function () {
               background-color: rgb(15, 15, 15);
               color: white;
               font-weight: 600;
-             
+
             "
           >
             Create Brand Story Part 2
@@ -277,7 +314,7 @@ $(document).ready(function () {
       coreValues: $("#coreValues").val(),
       regenerationFocus: $("#regenerationFocus").val(),
       pricingStrategy: $("#pricingStrategy").val(),
-      selectedTargetAudience: $("#targetAudience").val(),
+      selectedTargetAudience: selectedAudienceDescription,
       fullName: $("#fullName").val(),
       email: $("#email").val(),
     };
@@ -286,18 +323,20 @@ $(document).ready(function () {
 
   // Copy the brand story to the clipboard
   $(document).on("click", "#copyBtn", function () {
-    // Get the brand story text
-    const brandStoryText = $("#brandStory").text().trim();
+    const part1Text = $("#brandStoryPart1").text().trim();
+    const part2Text = $("#brandStory")
+      .text()
+      .replace("RE-GENERATE BRAND STORY", "")
+      .trim();
 
-    // Copy the text to the clipboard
+    const clipboardText = `${part1Text}\n\n${part2Text}`;
+
     navigator.clipboard
-      .writeText(brandStoryText)
+      .writeText(clipboardText)
       .then(() => {
-        // Success message
         alert("Brand story copied to clipboard!");
       })
       .catch((error) => {
-        // Error message
         console.error("Error copying text to clipboard: ", error);
         alert("Failed to copy brand story.");
       });
@@ -308,7 +347,8 @@ $(document).ready(function () {
     $("#loadingIndicator").toggle(show);
   }
 
-  function showbtnSpinner(show) {
-    $("#spinner-border").toggle(show);
+  function validateEmail(email) {
+    const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return re.test(String(email).toLowerCase());
   }
 });

@@ -298,7 +298,7 @@ const handleCSVOnGoogleDrive = async (csvFilePath) => {
 };
 
 const savetocsv = async (fullName, email, targetAudience, brandStory) => {
-  const headers = "First Name,Email,Target Audience,Brand Story,\n";
+  const headers = "Full Name,Email,Target Audience,Brand Story,\n";
   const data = `${fullName},${email},${targetAudience},"${brandStory}",\n`;
 
   try {
@@ -326,7 +326,7 @@ const generateTargetAudiences = async (businessDetails) => {
     `Core Business Values: ${businessDetails.coreValues}\n` +
     `Focus on Regeneration and Ethics: ${businessDetails.regenerationFocus}\n` +
     `Pricing Strategy: ${businessDetails.pricingStrategy}\n` +
-    `Based on this information, I need a clean array of objects detailing target audiences in this format: {"TargetAudiences": [{Title:'add title here',Description:'add Description heere'}...]}. Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response.`;
+    `Based on this information, provide a clean array of objects detailing target audiences in following format: {"TargetAudiences": [{Title:'add title here',Description:'add Description heere'}...]}.Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response.`;
   console.log("prompt loaded ....");
   const thread = await openai.beta.threads.create();
   await openai.beta.threads.messages.create(thread.id, {
@@ -439,6 +439,7 @@ const heroVillanPassion = async (
     throw new Error("No response received from the assistant.");
   }
 };
+
 const saveBrandStoryPart1 = async (response) => {
   // Convert object to JSON string
   // const data = response;
@@ -486,7 +487,7 @@ const saveAndReadTargetAduience = async (response) => {
         .replace(/\\n/g, "");
 
       var cresponse = cleanedResponse;
-      console.log("File Saved"); // Convert object to JSON string
+      console.log("File Saved", cresponse); // Convert object to JSON string
     } catch (error) {
       console.error("Error in saving target audiences: ", error);
     }
@@ -507,5 +508,5 @@ const saveAndReadTargetAduience = async (response) => {
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port http://localhost:${PORT}`);
 });
