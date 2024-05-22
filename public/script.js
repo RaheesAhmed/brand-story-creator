@@ -1,4 +1,5 @@
 $(document).ready(function () {
+  const BASE_URL = "http://localhost:3000";
   let infoText = document.getElementById("info-text");
   let storedBusinessDetails = {};
   let selectedAudienceDesc = $("#selectedAudienceDesc");
@@ -79,7 +80,7 @@ $(document).ready(function () {
     // Make an AJAX request to the server to retrieve target audiences
     $.ajax({
       type: "POST",
-      url: "http://localhost:3000/target-audience",
+      url: `${BASE_URL}/target-audience`,
       contentType: "application/json",
       data: JSON.stringify(formData),
       success: function (response) {
@@ -113,7 +114,7 @@ $(document).ready(function () {
       coreValues: $("#coreValues").val(),
       regenerationFocus: $("#regenerationFocus").val(),
       pricingStrategy: $("#pricingStrategy").val(),
-      selectedTargetAudience: selectedAudienceDesc,
+      selectedTargetAudience: selectedAudienceDescription,
     };
     console.log("Business Details:", businessDetails);
     $("#brandStory").show();
@@ -129,7 +130,7 @@ $(document).ready(function () {
     showLoading(true);
     $.ajax({
       type: "POST",
-      url: "http://localhost:3000/brand-story-part1",
+      url: ` ${BASE_URL}/brand-story-part1`,
       contentType: "application/json",
       data: JSON.stringify(businessDetails),
       success: function (response) {
@@ -153,8 +154,6 @@ $(document).ready(function () {
   function displayTargetAudiences(response) {
     console.log("Response in Target :", response);
     try {
-      selectedAudienceDesc.show();
-
       var targetAudiences = response.targetAudiences.TargetAudiences;
       var targetAudiencesHtml =
         '<h2 class="card-title" style="text-align:left;padding 10px; color:#2c2b2c">Target Audiences</h2><div class="row">';
@@ -200,12 +199,12 @@ $(document).ready(function () {
       alertBox.style.display = "none";
     }, 2000); // Hide after 3 seconds
   }
+  var selectedAudienceTitle = "";
   var selectedAudienceDescription = "";
-  // Select target audience and show alert
+  //Select target audience and show alert
   $(document).on("click", ".select-audience-btn", function () {
-    sta.show();
     selectedAudienceDescription = $(this).data("audience");
-    $("#selectedAudienceDesc").text(selectedAudienceDescription);
+    selectedAudienceTitle = $(this).parent().find(".card-title").text();
     showAlert("Selected...!");
   });
 
@@ -218,30 +217,28 @@ $(document).ready(function () {
 
     $.ajax({
       type: "POST",
-      url: "http://localhost:3000/generate-story",
+      url: `${BASE_URL}/generate-story-part2`,
       contentType: "application/json",
       data: JSON.stringify(storedBusinessDetails),
-
       success: function (response) {
-        $("#brandStory").html(
-          `<p style="padding:1rem"><span style="font-weight:800; color: #2c2b2c;
-          font-size: 25px">Part 2: Brand Story</span></br> ${response.brandStory}</p>
+        $("#brandStory").html(`
+          <p style="padding:1rem">
+            <span style="font-weight:800; color: #2c2b2c; font-size: 25px">Part 2: Brand Story</span><br>
+            ${response.brandStory}
+          </p>
           <div class="icons-container">
-          
-          <i class="fa-solid fa-copy" id="copyBtn" style="font-size: 20px; color: #615c61;cursor: pointer;"></i>
+            <i class="fa-solid fa-copy" id="copyBtn" style="font-size: 20px; color: #615c61; cursor: pointer;"></i>
           </div>
-
-
-
-          </br>`
-        );
+        `);
         $("#brandStory").show();
         $("#brandStoryPart1").show();
         showLoading(false);
       },
       error: function (error) {
         console.error("Error:", error);
-        $("#brandStory").html("<p>Invalid Response from openAI. Try Again</p>");
+        $("#brandStory").html(
+          "<p>Something went wrong. Unable to retrieve the brand story. Please try again.</p>"
+        );
         showLoading(false);
       },
     });
@@ -254,8 +251,8 @@ $(document).ready(function () {
 
   function displayBrandStoryPart1(response, businessDetails) {
     // Use the selectedAudienceDescription for displaying the target audience
+    const target_audience_title = selectedAudienceTitle;
     const target_audience = selectedAudienceDescription;
-    const target_audience_description = businessDetails.targetAudience;
 
     // Check if the response contains the 'response' property
     if (response) {
@@ -271,8 +268,8 @@ $(document).ready(function () {
       $("#brandStoryPart1").html(
         `<div style="padding:2rem; background: white;" class="card-custom">
           <h2 style="color: #2c2b2c; font-size: 25px;text-align:left;">Part 1: The Hero, Villain, and Passion of Your Brand Story</h2>
-          
-          <p><span style="font-weight:800;">Target Audience:</span> ${target_audience_description}</p>
+
+          <p><span style="font-weight:800;">Target Audience Title:</span> ${target_audience_title}</p>
           <p><span style="font-weight:800;">Selected  Target Audience:</span> ${target_audience}</p>
           <p><span style="font-weight:800;">Hero:</span> ${hero}</p>
           <p><span style="font-weight:800;">Villain:</span> ${villain}</p>
@@ -306,6 +303,8 @@ $(document).ready(function () {
   // Attach the generate brand story action to the button click event
   $(document).on("click", "#createStoryBtnPart2", function () {
     var businessDetails = {
+      fullName: $("#fullName").val(),
+      email: $("#email").val(),
       businessName: $("#businessName").val(),
       natureOfBusiness: $("#natureOfBusiness").val(),
       uniqueSellingProposition: $("#uniqueSellingProposition").val(),
@@ -315,18 +314,24 @@ $(document).ready(function () {
       regenerationFocus: $("#regenerationFocus").val(),
       pricingStrategy: $("#pricingStrategy").val(),
       selectedTargetAudience: selectedAudienceDescription,
-      fullName: $("#fullName").val(),
-      email: $("#email").val(),
+      brandStoryPart1: $("#brandStoryPart1")
+        .text()
+        .replace("Create Brand Story Part 2", " "),
     };
     generateBrandStory(businessDetails);
   });
 
   // Copy the brand story to the clipboard
   $(document).on("click", "#copyBtn", function () {
-    const part1Text = $("#brandStoryPart1").text().trim();
+    // Using .text() and regular expression to remove excessive whitespace and line breaks
+    const part1Text = $("#brandStoryPart1")
+      .text()
+      .replace(/\s{2,}/g, " ")
+      .replace("Create Brand Story Part 2", " ")
+      .trim();
     const part2Text = $("#brandStory")
       .text()
-      .replace("RE-GENERATE BRAND STORY", "")
+      .replace(/\s{2,}/g, " ")
       .trim();
 
     const clipboardText = `${part1Text}\n\n${part2Text}`;
@@ -334,11 +339,11 @@ $(document).ready(function () {
     navigator.clipboard
       .writeText(clipboardText)
       .then(() => {
-        alert("Brand story copied to clipboard!");
+        showAlert("Brand story copied to clipboard!");
       })
       .catch((error) => {
         console.error("Error copying text to clipboard: ", error);
-        alert("Failed to copy brand story.");
+        showAlert("Failed to copy brand story.");
       });
   });
 
