@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  const BASE_URL = "http://localhost:3000";
+  const BASE_URL = "http://localhost:5000";
   let infoText = document.getElementById("info-text");
   let storedBusinessDetails = {};
   let selectedAudienceDesc = $("#selectedAudienceDesc");

@@ -1,8 +1,6 @@
-
-*{
+* {
   font-family: "Poppins", sans-serif;
 }
-
 
 h2 {
   color: #2c2b2c;
@@ -13,7 +11,7 @@ h2 {
 }
 
 .form-group label {
-  color:#2c2b2c;
+  color: #2c2b2c;
 }
 
 .form-control {
@@ -98,13 +96,13 @@ h2.mb-4 {
 
 /* Style the form background and shadow */
 form {
-    background-color: #fff;
-    padding: 60px;
+  background-color: #fff;
+  padding: 60px;
 
-    margin: auto;
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
+  margin: auto;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Adjust form input styles */
@@ -124,7 +122,7 @@ form {
 }
 
 .btn-custom:hover {
- background: linear-gradient(to right, #b8015c, #85033d);
+  background: linear-gradient(to right, #b8015c, #85033d);
 }
 
 /* Style the footer to match the design */
@@ -170,10 +168,6 @@ body {
   margin-bottom: 2rem;
 }
 
-
-
-
-
 .card {
   margin-bottom: 1rem;
 }
@@ -205,7 +199,6 @@ body {
 .fa-copy:hover {
   color: #0056b3;
 }
-
 
 .card-custom {
   border: none;
@@ -239,7 +232,6 @@ body {
   color: #fff;
 }
 
-
 .fixed-card {
   height: 350px; /* Adjust the height as needed */
   display: flex;
@@ -254,15 +246,12 @@ body {
   margin-top: auto; /* Align the button to the bottom of the card */
 }
 
-
 body {
   background-color: #f5f5f5;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
 .form-container {
-
-
   border-radius: 10px;
 
   padding: 30px;
@@ -285,7 +274,6 @@ body {
 
 .form-group label {
   font-weight: 600;
-
 }
 
 .form-group i {
@@ -301,27 +289,23 @@ body {
   font-size: 14px;
 }
 
-
-
 .footer {
   color: #999;
   font-size: 14px;
   margin-top: 30px;
 }
 
-.must{
+.must {
   margin-right: 6px !important;
 }
 
-.btn-container{
-
+.btn-container {
   display: flex;
   flex-direction: column;
   justify-content: start;
 }
 
-
-.icons-container{
+.icons-container {
   display: flex;
   flex-direction: row;
   gap: 25px;
@@ -329,18 +313,16 @@ body {
 }
 
 @media (min-width: 320px) {
-
-
-.form-container {
-  border-radius: 10px;
-  padding: 15px !important;
-}
-.p-5{
-  padding: 10px !important;
-}
-.form{
-  padding:20px !important;
-}
+  .form-container {
+    border-radius: 10px;
+    padding: 15px !important;
+  }
+  .p-5 {
+    padding: 10px !important;
+  }
+  .form {
+    padding: 20px !important;
+  }
 }
 
 .custom-alert {
@@ -357,11 +339,9 @@ body {
 }
 
 .info-container {
-
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1rem;
-
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
 }
 
 /* #selectedAudienceDesc{

@@ -45,33 +45,26 @@ const csvFilePath = path.join(__dirname, "BrandStory-Data.csv");
 // Initialize the Google Drive API client
 const drive = google.drive({ version: "v3", auth: jwtClient });
 // Async function to create or get existing assistant
-async function getOrCreateAssistant() {
-  const assistantFilePath = "./assistant.json";
-  let assistantDetails;
-
+async function getOrCreateAssistant(content) {
   try {
-    // Check if the assistant.json file exists
-    const assistantData = await fsPromises.readFile(assistantFilePath, "utf8");
-    assistantDetails = JSON.parse(assistantData);
+    const completion = await openai.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are Conscious Brand Sage,Conscious Brand Sage is a conversational and approachable GPT, specializing in branding for regenerative, conscious businesses. It excels in identifying target audiences and crafting brand stories in the hero, villain, passion format, aligned with sustainability and ethical principles. This GPT offers advice on creating impactful brand narratives and visual identities, infused with regenerative values. It asks for more details to provide precise, helpful advice, steering clear of strategies that contradict ethical or sustainability goals. Conscious Brand Sage uses language that is familiar and engaging to the regenerative business community, making complex concepts more relatable and accessible. Its approach is to offer personalized, context-specific guidance in a friendly and conversational manner, ensuring users feel supported in aligning their branding with their values and business goals.while generating response for target audience and Hero Villian passion use the below format:Give target audiences in this format: {'TargetAudiences': [{Title:'add title here',Description:'add Description heere'}...]}.Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response For Hero,Villain and Passion use this format while generating response {[{'Hero':'The hero is...'},{'Villain':'The villain is...'},{'Passion':'The passion is...'}]}.",
+        },
+        { role: "system", content: content },
+      ],
+      model: "gpt-4o-mini",
+    });
+
+    const response = completion.choices[0].message.content;
+
+    return response;
   } catch (error) {
-    const assistant = await openai.beta.assistants.retrieve(assistantID);
-    const assistantDetails = {
-      assistantId: assistant.id,
-      assistantName: assistant.name,
-      assistantInstructions: assistant.instructions,
-      assistantModel: assistant.model,
-      assistantTools: assistant.tools,
-    };
-    console.log(assistantDetails);
-
-    // Save the assistant details to assistant.json
-    await fsPromises.writeFile(
-      assistantFilePath,
-      JSON.stringify(assistantDetails, null, 2)
-    );
+    console.error("Error in creating assistant: ", error);
   }
-
-  return assistantDetails;
 }
 
 app.get("/", (req, res) => {
@@ -171,7 +164,6 @@ app.post("/generate-story-part2", async (req, res) => {
       targetAudience,
       email,
     } = req.body;
-    const assistantDetails = await getOrCreateAssistant();
 
     // Retrieve the data from brandStoryPart1Data
     const part1Data = brandStoryPart1Data.tempKey;
@@ -192,72 +184,33 @@ app.post("/generate-story-part2", async (req, res) => {
       `use this format for response {"BrandStory":"The brand story is..."}\n do not use the json with the response just give a clean json` +
       `
       `;
+    const response = await getOrCreateAssistant(prompt);
+    const parsedData = JSON.parse(response);
+    console.log("Parsed Data", parsedData);
+    const brandStory = parsedData.BrandStory;
 
-    // Create a thread using the assistantId
-    const thread = await openai.beta.threads.create();
+    res.json({ brandStory: brandStory });
+    console.log("Brand Story Generated", brandStory);
+    const brandStoryPart1 = await heroVillanPassion(brandStory);
 
-    // Pass the prompt into the existing thread
-    await openai.beta.threads.messages.create(thread.id, {
-      role: "user",
-      content: prompt,
+    // Call savetocsv with the appropriate data
+    await saveToCSV({
+      fullName,
+      email,
+      businessName,
+      natureOfBusiness,
+      uniqueSellingProposition,
+      positiveImpact,
+      targetAudience,
+      coreValues,
+      regenerationFocus,
+      pricingStrategy,
+      selectedTargetAudience,
+      brandStory1: brandStoryPart1,
+      brandStory2: brandStory,
     });
 
-    // Create a run using the assistantId
-    const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: assistantDetails.assistantId,
-    });
-
-    // Fetch run-status
-    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-
-    // Polling mechanism to check if runStatus is completed
-    while (runStatus.status !== "completed") {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-    }
-
-    // Get the last assistant message from the messages array
-    const messages = await openai.beta.threads.messages.list(thread.id);
-    const lastMessageForRun = messages.data
-      .filter(
-        (message) => message.run_id === run.id && message.role === "assistant"
-      )
-      .pop();
-
-    if (lastMessageForRun) {
-      console.log(
-        "Last Message From run",
-        lastMessageForRun.content[0].text.value
-      );
-      const parsedData = JSON.parse(lastMessageForRun.content[0].text.value);
-      console.log("Parsed Data", parsedData);
-      const brandStory = parsedData.BrandStory;
-
-      res.json({ brandStory: brandStory });
-      console.log("Brand Story Generated", brandStory);
-      const brandStoryPart1 = await heroVillanPassion(brandStory);
-
-      // Call savetocsv with the appropriate data
-      await saveToCSV({
-        fullName,
-        email,
-        businessName,
-        natureOfBusiness,
-        uniqueSellingProposition,
-        positiveImpact,
-        targetAudience,
-        coreValues,
-        regenerationFocus,
-        pricingStrategy,
-        selectedTargetAudience,
-        brandStory1: brandStoryPart1,
-        brandStory2: brandStory,
-      });
-
-      await handleCSVOnGoogleDrive(csvFilePath);
-    } else {
-      res.status(500).send("No response received from the assistant.");
-    }
+    await handleCSVOnGoogleDrive(csvFilePath);
   } catch (error) {
     console.error(error);
     if (!res.headersSent) {
@@ -334,8 +287,7 @@ const saveToCSV = async (data) => {
 
 const generateTargetAudiences = async (businessDetails) => {
   console.log("Generating target audiences...", businessDetails);
-  const assistantDetails = await getOrCreateAssistant();
-  console.log("Generating target audiences...");
+
   const prompt =
     `Please list 12 different target audiences suited for my new emerging dream business. The description of my dream business is as follows:\n` +
     `Business Name: ${businessDetails.businessName}\n` +
@@ -347,45 +299,11 @@ const generateTargetAudiences = async (businessDetails) => {
     `Pricing Strategy: ${businessDetails.pricingStrategy}\n` +
     `Based on this information, provide a clean array of objects detailing target audiences in following format: {"TargetAudiences": [{Title:'add title here',Description:'add Description heere'}...]}.Ensure there are no extra characters, unnecessary formatting, or syntax errors in the response.`;
   console.log("prompt loaded ....");
-  const thread = await openai.beta.threads.create();
-  await openai.beta.threads.messages.create(thread.id, {
-    role: "user",
-    content: prompt,
-  });
-  console.log("message sent ....");
-  const run = await openai.beta.threads.runs.create(thread.id, {
-    assistant_id: assistantDetails.assistantId,
-  });
-  console.log("run created ....");
-  let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-  console.log("run status retrieved ....");
-  while (runStatus.status !== "completed") {
-    console.log("run not completed ....");
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Increase timeout if necessary
-    console.log("waiting for run to complete ....");
-    runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-    console.log("run status retrieved ....");
-  }
-  console.log("run completed ....");
-  const messages = await openai.beta.threads.messages.list(thread.id);
-  const lastMessageForRun = messages.data
-    .filter(
-      (message) => message.run_id === run.id && message.role === "assistant"
-    )
-    .pop();
+  const res = await getOrCreateAssistant(prompt);
 
-  if (lastMessageForRun) {
-    const cleanedResponse = lastMessageForRun.content[0].text.value.replace(
-      /```json\n|\n```/g,
-      ""
-    );
-
-    const targetAudiences = JSON.parse(cleanedResponse);
-    console.log("Target Audiences Generated ");
-    return targetAudiences;
-  } else {
-    throw new Error("No response received from the assistant.");
-  }
+  const targetAudiences = JSON.parse(res);
+  console.log("Target Audiences Generated ");
+  return targetAudiences;
 };
 
 const heroVillanPassion = async (
@@ -398,7 +316,6 @@ const heroVillanPassion = async (
   regenerationFocus,
   pricingStrategy
 ) => {
-  const assistantDetails = await getOrCreateAssistant();
   const prompt = `Help me to identify  Hero, Villain and Passion in my business brand story based on my selected target audience: ${selectedTargetAudience}
     Write 100 words about each one of them: the hero, the villain and the passion.
     Hero, villain, passion brand story format is a storytelling framework often used in marketing and branding to engage and connect with audiences on an emotional level. It follows a narrative structure that features three key elements:
@@ -416,48 +333,12 @@ const heroVillanPassion = async (
     response format:
     [{"Hero":"The hero is..."},{"Villain":"The villain is..."},{"Passion":"The passion is..."}]`;
 
-  // Create a thread using the assistantId
-  const thread = await openai.beta.threads.create();
+  const res = await getOrCreateAssistant(prompt);
+  const response = JSON.parse(res.replace(/```json\n|\n```/g, ""));
+  //console.log("Hero, Villain, Passion:", response);
+  const savedResponse = await saveBrandStoryPart1(response);
 
-  // Pass the prompt into the existing thread
-  await openai.beta.threads.messages.create(thread.id, {
-    role: "user",
-    content: prompt,
-  });
-
-  // Create a run using the assistantId
-  const run = await openai.beta.threads.runs.create(thread.id, {
-    assistant_id: assistantDetails.assistantId,
-  });
-
-  // Fetch run-status
-  let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-
-  // Polling mechanism to check if runStatus is completed
-  while (runStatus.status !== "completed") {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-  }
-
-  // Get the last assistant message from the messages array
-  const messages = await openai.beta.threads.messages.list(thread.id);
-  const lastMessageForRun = messages.data
-    .filter(
-      (message) => message.run_id === run.id && message.role === "assistant"
-    )
-    .pop();
-
-  if (lastMessageForRun) {
-    const response = JSON.parse(
-      lastMessageForRun.content[0].text.value.replace(/```json\n|\n```/g, "")
-    );
-    //console.log("Hero, Villain, Passion:", response);
-    const savedResponse = await saveBrandStoryPart1(response);
-
-    return savedResponse;
-  } else {
-    throw new Error("No response received from the assistant.");
-  }
+  return savedResponse;
 };
 
 const saveBrandStoryPart1 = async (response) => {
@@ -526,7 +407,7 @@ const saveAndReadTargetAduience = async (response) => {
 };
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
 });
